@@ -49,7 +49,7 @@ class MemoryDB {
 const ORIGIN = 'https://holter-box-check.pages.dev';
 const ID = 'b84d5159-05e1-4ac5-b074-a57176b8bfad';
 function env(db: MemoryDB): Env {
-  return { DB: db as unknown as D1Database, PASSCODE: '48273916', IP_HASH_SECRET: 'test-only-random-secret' };
+  return { DB: db as unknown as D1Database, PASSCODE: '482739', IP_HASH_SECRET: 'test-only-random-secret' };
 }
 function get(path: string, cookie?: string): Request {
   return new Request(`${ORIGIN}${path}`, { headers: cookie ? { Cookie: cookie } : {} });
@@ -75,10 +75,10 @@ describe('passcode protection', () => {
 
   it('rejects wrong passcodes, rate limits attempts, and blocks cross-origin posts', async () => {
     const context = env(new MemoryDB());
-    expect((await login(post('/api/login', { passcode: '11111111' }, undefined, 'https://other.example'), context)).status).toBe(403);
+    expect((await login(post('/api/login', { passcode: '111111' }, undefined, 'https://other.example'), context)).status).toBe(403);
     expect((await login(post('/api/login', { passcode: 'letters' }), context)).status).toBe(400);
-    expect((await login(post('/api/login', { passcode: '1234567' }), context)).status).toBe(400);
-    for (let i = 0; i < 10; i++) expect((await login(post('/api/login', { passcode: '11111111' }), context)).status).toBe(401);
+    expect((await login(post('/api/login', { passcode: '12345' }), context)).status).toBe(400);
+    for (let i = 0; i < 10; i++) expect((await login(post('/api/login', { passcode: '111111' }), context)).status).toBe(401);
     expect((await login(post('/api/login', { passcode: context.PASSCODE }), context)).status).toBe(429);
   });
 

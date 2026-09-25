@@ -22,7 +22,7 @@ function unavailable(): Response {
 }
 
 function configured(env: Env): boolean {
-  return Boolean(env.DB && /^[0-9]{8,12}$/.test(env.PASSCODE) && env.IP_HASH_SECRET);
+  return Boolean(env.DB && /^[0-9]{6,12}$/.test(env.PASSCODE) && env.IP_HASH_SECRET);
 }
 
 function sameOrigin(request: Request): boolean {
@@ -94,7 +94,7 @@ export async function login(request: Request, env: Env): Promise<Response> {
   if (!configured(env)) return unavailable();
   if (!sameOrigin(request)) return json({ error: 'Invalid request origin.' }, 403);
   const data = await body(request);
-  if (typeof data?.passcode !== 'string' || !/^[0-9]{8,12}$/.test(data.passcode)) return json({ error: 'Enter an 8–12 digit passcode.' }, 400);
+  if (typeof data?.passcode !== 'string' || !/^[0-9]{6,12}$/.test(data.passcode)) return json({ error: 'Enter a 6–12 digit passcode.' }, 400);
   try {
     const ip = request.headers.get('CF-Connecting-IP') || 'local';
     const key = await hmac(env.IP_HASH_SECRET, ip);

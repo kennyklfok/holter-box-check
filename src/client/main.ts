@@ -29,7 +29,7 @@ const sessionReset = fetch('/api/logout', { method: 'POST', credentials: 'same-o
 
 function syncPasscode(): void {
   passcodeInput.value = passcodeInput.value.replace(/\D/g, '').slice(0, 12);
-  loginButton.disabled = checkingPasscode || passcodeInput.value.length < 8;
+  loginButton.disabled = checkingPasscode || passcodeInput.value.length < 6;
 }
 
 function changePasscode(value: string): void {
@@ -148,7 +148,7 @@ async function refreshStatus(): Promise<void> {
 loginForm.addEventListener('submit', async event => {
   event.preventDefault();
   const enteredPasscode = passcodeInput.value;
-  if (!/^[0-9]{8,12}$/.test(enteredPasscode)) return;
+  if (!/^[0-9]{6,12}$/.test(enteredPasscode)) return;
   errorText('login-error', '');
   checkingPasscode = true;
   syncPasscode();

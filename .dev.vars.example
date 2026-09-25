@@ -1,2 +1,2 @@
-PASSCODE="replace-with-8-to-12-random-digits"
+PASSCODE="replace-with-6-to-12-random-digits"
 IP_HASH_SECRET="replace-with-a-random-32-byte-hex-string"
