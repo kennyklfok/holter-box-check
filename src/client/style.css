@@ -3,19 +3,26 @@
 body{margin:0;min-width:320px}
 button,input{font:inherit}
 button{cursor:pointer}
-button:disabled{cursor:wait;opacity:.65}
+button:disabled{cursor:not-allowed;opacity:.6}
 [hidden]{display:none!important}
 :focus-visible{outline:3px solid #3c9bd6;outline-offset:3px}
 
 .lock-screen{min-height:100dvh;display:grid;place-items:center;padding:24px;background:linear-gradient(160deg,#eaf4fa 0%,#f8fbfd 65%)}
-.passcode-card{width:min(100%,390px);padding:42px;background:#fff;border-top:5px solid #3b9bd6;box-shadow:0 15px 45px #1a4b6817}
-.passcode-card h1{margin:0 0 34px;font-size:30px;line-height:1.2;font-weight:700;letter-spacing:-.035em}
+.passcode-card{width:min(100%,390px);padding:36px;background:#fff;border-top:5px solid #3b9bd6;box-shadow:0 15px 45px #1a4b6817}
+.passcode-card h1{margin:0 0 25px;font-size:30px;line-height:1.2;font-weight:700;letter-spacing:-.035em}
 label{display:block;margin-bottom:9px;font-size:14px;font-weight:700}
 input{display:block;width:100%;min-height:52px;padding:12px 14px;border:1px solid #bfcbd2;border-radius:4px;background:#fff;color:#333;outline:none}
 input:focus{border-color:#3b9bd6;box-shadow:0 0 0 3px #3b9bd629}
+.passcode-card input{height:58px;padding:0 8px;border:0;border-bottom:2px solid #bfcbd2;border-radius:0;background:transparent;text-align:center;font-size:28px;font-weight:700;letter-spacing:.4em;caret-color:transparent}
+.passcode-card input:focus{border-color:#3b9bd6;box-shadow:none}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:20px}
+.keypad button{width:67px;height:67px;justify-self:center;border:1px solid #d7e4eb;border-radius:50%;background:#f1f7fb;color:#263e4b;font-size:25px;font-weight:600;touch-action:manipulation}
+.keypad button:hover{background:#dceef8}
+.keypad button:active{background:#c8e4f3;transform:scale(.96)}
+.keypad #passcode-delete{border-color:transparent;background:transparent;font-size:27px}
 .primary-button,.check-button{border:0;border-radius:4px;background:#c34704;color:#fff;font-weight:700}
 .primary-button:hover,.check-button:hover{background:#a93c03}
-.passcode-card .primary-button{width:100%;min-height:52px;margin-top:22px}
+.passcode-card .primary-button{width:100%;min-height:52px;margin-top:17px}
 .form-error{margin:12px 0 0;color:#ad2d21;font-size:13px;line-height:1.5}
 
 .topbar{height:76px;display:flex;align-items:center;justify-content:space-between;padding:0 max(28px,calc((100vw - 1080px)/2));border-top:5px solid #3b9bd6;border-bottom:1px solid #e4e9ec;background:#fff}
@@ -60,4 +67,5 @@ input:focus{border-color:#3b9bd6;box-shadow:0 0 0 3px #3b9bd629}
 .secondary-button{border:1px solid #cbd6dc;border-radius:4px;background:#fff;color:#333;font-weight:700}
 .secondary-button:hover{background:#f2f6f8}
 
-@media(max-width:600px){.topbar{height:68px;padding:0 18px}.topbar strong{font-size:18px}.content-area{padding:0 22px 56px}.dashboard-view{padding-top:78px}.latest-content{min-height:188px}.latest-content h1{font-size:25px}.latest-time{font-size:32px}.checked-by{font-size:20px}.check-button{min-height:70px;font-size:18px}.history-view{padding-top:39px}.history-view h1{font-size:29px}.history-row{padding:17px}.passcode-card{padding:32px}.passcode-card h1{font-size:27px}}
+@media(max-width:600px){.topbar{height:68px;padding:0 18px}.topbar strong{font-size:18px}.content-area{padding:0 22px 56px}.dashboard-view{padding-top:78px}.latest-content{min-height:188px}.latest-content h1{font-size:25px}.latest-time{font-size:32px}.checked-by{font-size:20px}.check-button{min-height:70px;font-size:18px}.history-view{padding-top:39px}.history-view h1{font-size:29px}.history-row{padding:17px}.passcode-card{padding:28px}.passcode-card h1{font-size:27px}}
+@media(max-height:700px){.lock-screen{padding:12px}.passcode-card{padding:22px}.passcode-card h1{margin-bottom:15px}.keypad{gap:5px;margin-top:12px}.keypad button{width:56px;height:56px;font-size:22px}}

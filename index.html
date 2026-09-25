@@ -13,10 +13,24 @@
         <section class="passcode-card" aria-labelledby="login-title">
           <h1 id="login-title">Holter box</h1>
           <form id="login-form">
-            <label for="passcode">Passcode</label>
-            <input id="passcode" name="passcode" type="password" autocomplete="off" required maxlength="256" autofocus />
+            <label for="passcode">Passcode · 8–12 digits</label>
+            <input id="passcode" name="passcode" type="password" inputmode="none" autocomplete="off" pattern="[0-9]{8,12}" minlength="8" maxlength="12" required />
+            <div id="keypad" class="keypad" role="group" aria-label="Passcode number pad">
+              <button type="button" data-digit="1">1</button>
+              <button type="button" data-digit="2">2</button>
+              <button type="button" data-digit="3">3</button>
+              <button type="button" data-digit="4">4</button>
+              <button type="button" data-digit="5">5</button>
+              <button type="button" data-digit="6">6</button>
+              <button type="button" data-digit="7">7</button>
+              <button type="button" data-digit="8">8</button>
+              <button type="button" data-digit="9">9</button>
+              <span aria-hidden="true"></span>
+              <button type="button" data-digit="0">0</button>
+              <button id="passcode-delete" type="button" aria-label="Delete last digit"><svg aria-hidden="true" viewBox="0 0 32 24" width="28" height="24"><path d="M11 2H28a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H11L2 12 11 2Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m16 8 8 8m0-8-8 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+            </div>
             <p id="login-error" class="form-error" role="alert" hidden></p>
-            <button id="login-submit" class="primary-button" type="submit">Enter</button>
+            <button id="login-submit" class="primary-button" type="submit" disabled>Enter</button>
           </form>
         </section>
       </main>

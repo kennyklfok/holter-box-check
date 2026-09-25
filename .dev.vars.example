@@ -1,2 +1,2 @@
-PASSCODE="replace-with-a-long-staff-passcode"
+PASSCODE="replace-with-8-to-12-random-digits"
 IP_HASH_SECRET="replace-with-a-random-32-byte-hex-string"

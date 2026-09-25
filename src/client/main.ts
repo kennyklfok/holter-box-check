@@ -15,13 +15,28 @@ const dialog = $<HTMLDialogElement>('check-dialog');
 const loginForm = $<HTMLFormElement>('login-form');
 const checkForm = $<HTMLFormElement>('check-form');
 const loginButton = $<HTMLButtonElement>('login-submit');
+const passcodeInput = $<HTMLInputElement>('passcode');
+const digitButtons = document.querySelectorAll<HTMLButtonElement>('[data-digit]');
+const deleteButton = $<HTMLButtonElement>('passcode-delete');
 const checkButton = $<HTMLButtonElement>('check-submit');
 const menuButton = $<HTMLButtonElement>('menu-button');
 const menuPanel = $('menu-panel');
 let nextBefore: number | null = null;
 let checkRequestId = '';
+let checkingPasscode = false;
 // A fresh QR visit always starts at the passcode, even on a shared device with an old cookie.
 const sessionReset = fetch('/api/logout', { method: 'POST', credentials: 'same-origin', cache: 'no-store' }).catch(() => null);
+
+function syncPasscode(): void {
+  passcodeInput.value = passcodeInput.value.replace(/\D/g, '').slice(0, 12);
+  loginButton.disabled = checkingPasscode || passcodeInput.value.length < 8;
+}
+
+function changePasscode(value: string): void {
+  passcodeInput.value = value;
+  syncPasscode();
+  errorText('login-error', '');
+}
 
 function errorText(id: string, message: string): void {
   const element = $(id);
@@ -46,13 +61,13 @@ function showLogin(): void {
   closeMenu();
   if (dialog.open) dialog.close();
   $('success-message').hidden = true;
-  $('passcode').focus();
+  changePasscode('');
 }
 
 function showStaff(): void {
   loginView.hidden = true;
   staffView.hidden = false;
-  $<HTMLInputElement>('passcode').value = '';
+  changePasscode('');
 }
 
 const dateFormatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Vancouver', year: 'numeric', month: 'long', day: 'numeric' });
@@ -131,14 +146,36 @@ async function refreshStatus(): Promise<void> {
 }
 
 loginForm.addEventListener('submit', async event => {
-  event.preventDefault(); errorText('login-error', ''); loginButton.disabled = true; loginButton.textContent = 'Checking…';
+  event.preventDefault();
+  const enteredPasscode = passcodeInput.value;
+  if (!/^[0-9]{8,12}$/.test(enteredPasscode)) return;
+  errorText('login-error', '');
+  checkingPasscode = true;
+  syncPasscode();
+  passcodeInput.readOnly = true;
+  digitButtons.forEach(button => { button.disabled = true; });
+  deleteButton.disabled = true;
+  loginButton.textContent = 'Checking…';
   try {
     await sessionReset;
-    await api('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ passcode: $<HTMLInputElement>('passcode').value }) });
+    await api('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ passcode: enteredPasscode }) });
     await refreshStatus(); showStaff(); setView('dashboard');
-  } catch (error) { errorText('login-error', error instanceof Error ? error.message : 'Could not enter.'); }
-  finally { loginButton.disabled = false; loginButton.textContent = 'Enter'; }
+  } catch (error) {
+    passcodeInput.value = '';
+    errorText('login-error', error instanceof Error ? error.message : 'Could not enter.');
+  } finally {
+    checkingPasscode = false;
+    passcodeInput.readOnly = false;
+    digitButtons.forEach(button => { button.disabled = false; });
+    deleteButton.disabled = false;
+    syncPasscode();
+    loginButton.textContent = 'Enter';
+  }
 });
+
+passcodeInput.addEventListener('input', () => { syncPasscode(); errorText('login-error', ''); });
+digitButtons.forEach(button => button.addEventListener('click', () => changePasscode(passcodeInput.value + button.dataset.digit)));
+deleteButton.addEventListener('click', () => changePasscode(passcodeInput.value.slice(0, -1)));
 
 document.querySelectorAll<HTMLButtonElement>('[data-view]').forEach(button => button.addEventListener('click', () => setView(button.dataset.view as 'dashboard' | 'history')));
 $('load-more').addEventListener('click', () => void loadHistory());
