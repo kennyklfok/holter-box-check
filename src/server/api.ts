@@ -8,7 +8,7 @@ export interface Env {
 
 type CheckRow = { id: number; entered_by: string; checked_at: string };
 const COOKIE = '__Host-holter_session';
-const SESSION_MS = 8 * 60 * 60 * 1000;
+const SESSION_MS = 20 * 60 * 1000;
 const ATTEMPT_WINDOW_MS = 15 * 60 * 1000;
 const MAX_ATTEMPTS = 10;
 const NO_STORE = { 'Cache-Control': 'no-store, private', 'Content-Type': 'application/json; charset=utf-8' };

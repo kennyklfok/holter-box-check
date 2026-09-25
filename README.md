@@ -6,7 +6,7 @@ A small staff-only website for logging checks of the Holter drop-off box at the 
 
 Each check stores only the time and the staff initials or name entered. Do **not** enter patient names, Holter identifiers, or other patient information. The shared passcode does **not** verify that an entered name or initials belong to the person making a check. This version has no individual staff accounts or audit-grade identity verification.
 
-Sessions last eight hours, are kept in D1, and use an opaque `HttpOnly; Secure; SameSite=Strict` cookie. Logging out deletes the session. Changing either deployment secret invalidates existing sessions. Login attempts are limited to 10 per IP address per 15-minute window using an HMAC-hashed IP key in D1. Staff behind one hospital network address share that limit. A repeated check request ID creates only one record. Server and database failures return an error rather than exposing data.
+Sessions last 20 minutes, are kept in D1, and use an opaque `HttpOnly; Secure; SameSite=Strict` cookie. Each fresh page load clears the previous session before accepting the passcode, so scanning the QR code opens directly to the passcode screen. There is no visible logout control; staff should close the tab after use. Changing either deployment secret invalidates existing sessions. Passcode attempts are limited to 10 per IP address per 15-minute window using an HMAC-hashed IP key in D1. Staff behind one hospital network address share that limit. A repeated check request ID creates only one record. Server and database failures return an error rather than exposing data.
 
 ## Local setup
 
@@ -61,7 +61,7 @@ This creates a self-contained `qr-poster.html` with the exact URL encoded in a h
 
 - Approve use of Cloudflare Pages and D1 for this staff activity, including organizational security review, data location, privacy requirements, and the fact that staff names or initials are retained in D1.
 - Set an appropriate retention and deletion policy for history, backup storage, and access to the Cloudflare account. Assign an owner for the passcode, secret rotation, account recovery, and incident response.
-- Decide how the shared passcode is distributed and how staff log out of shared devices. Confirm that a shared passcode and self-entered name are acceptable for this operational record; they do not establish individual identity.
+- Decide how the shared passcode is distributed and how staff close the page on shared devices. A session remains usable in an open tab for up to 20 minutes; a fresh load clears it. Confirm that a shared passcode and self-entered name are acceptable for this operational record; they do not establish individual identity.
 - Confirm network access and mobile scanning at the entrance. Approve placement and maintenance of the printed QR code so it continues to point to the intended pages.dev URL.
 - Accept the free plan's quotas and lack of guaranteed availability for this workflow. If availability or stronger identity controls are required, IT should choose those before go-live.
 

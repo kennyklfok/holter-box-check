@@ -1,10 +1,12 @@
+import '@fontsource/manrope/latin-400.css';
+import '@fontsource/manrope/latin-600.css';
+import '@fontsource/manrope/latin-700.css';
 import './style.css';
 
 type Check = { id: number; entered_by: string; checked_at: string };
 type History = { items: Check[]; nextBefore: number | null };
 
 const $ = <T extends HTMLElement>(id: string): T => document.getElementById(id) as T;
-const loadingView = $('loading-view');
 const loginView = $('login-view');
 const staffView = $('staff-view');
 const dashboardView = $('dashboard-view');
@@ -15,9 +17,11 @@ const checkForm = $<HTMLFormElement>('check-form');
 const loginButton = $<HTMLButtonElement>('login-submit');
 const checkButton = $<HTMLButtonElement>('check-submit');
 const menuButton = $<HTMLButtonElement>('menu-button');
-const mobileMenu = $('mobile-menu');
+const menuPanel = $('menu-panel');
 let nextBefore: number | null = null;
 let checkRequestId = '';
+// A fresh QR visit always starts at the passcode, even on a shared device with an old cookie.
+const sessionReset = fetch('/api/logout', { method: 'POST', credentials: 'same-origin', cache: 'no-store' }).catch(() => null);
 
 function errorText(id: string, message: string): void {
   const element = $(id);
@@ -37,27 +41,22 @@ async function api<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 function showLogin(): void {
-  loadingView.hidden = true;
   staffView.hidden = true;
   loginView.hidden = false;
-  $('top-actions').hidden = true;
-  mobileMenu.hidden = true;
-  menuButton.setAttribute('aria-expanded', 'false');
+  closeMenu();
   if (dialog.open) dialog.close();
   $('success-message').hidden = true;
   $('passcode').focus();
 }
 
 function showStaff(): void {
-  loadingView.hidden = true;
   loginView.hidden = true;
   staffView.hidden = false;
-  $('top-actions').hidden = false;
   $<HTMLInputElement>('passcode').value = '';
 }
 
 const dateFormatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Vancouver', year: 'numeric', month: 'long', day: 'numeric' });
-const timeFormatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Vancouver', hour: 'numeric', minute: '2-digit', hour12: true, timeZoneName: 'short' });
+const timeFormatter = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Vancouver', hour: 'numeric', minute: '2-digit', hour12: true, timeZoneName: 'short' });
 
 function localDate(utc: string): string { return dateFormatter.format(new Date(utc)); }
 function localTime(utc: string): string { return timeFormatter.format(new Date(utc)); }
@@ -66,26 +65,25 @@ function renderLatest(check: Check | null): void {
   const target = $('latest-content');
   target.replaceChildren();
   if (!check) {
-    const title = document.createElement('h2'); title.textContent = 'No checks recorded yet';
-    const note = document.createElement('p'); note.textContent = 'Once a staff member checks the box, the latest check will appear here.';
-    target.append(title, note);
+    const title = document.createElement('h1'); title.id = 'dashboard-title'; title.textContent = 'Holter box has not been checked yet.';
+    target.append(title);
     return;
   }
-  const date = document.createElement('h2'); date.textContent = localDate(check.checked_at);
-  const time = document.createElement('div'); time.className = 'latest-time'; time.textContent = localTime(check.checked_at);
-  const by = document.createElement('p'); by.className = 'checked-by'; by.textContent = `Checked by ${check.entered_by}`;
-  target.append(date, time, by);
+  const title = document.createElement('h1'); title.id = 'dashboard-title'; title.textContent = 'Holter box last checked at';
+  const time = document.createElement('time'); time.className = 'latest-time'; time.dateTime = check.checked_at; time.textContent = localTime(check.checked_at);
+  const date = document.createElement('p'); date.className = 'latest-date'; date.textContent = localDate(check.checked_at);
+  const by = document.createElement('p'); by.className = 'checked-by'; by.textContent = `by ${check.entered_by}`;
+  target.append(title, time, date, by);
 }
 
 function historyRow(check: Check): HTMLElement {
   const row = document.createElement('div'); row.className = 'history-row';
-  const icon = document.createElement('span'); icon.className = 'history-icon'; icon.setAttribute('aria-hidden', 'true'); icon.textContent = '✓';
   const when = document.createElement('div'); when.className = 'history-when';
   const date = document.createElement('strong'); date.textContent = localDate(check.checked_at);
-  const time = document.createElement('span'); time.textContent = localTime(check.checked_at);
+  const time = document.createElement('time'); time.dateTime = check.checked_at; time.textContent = localTime(check.checked_at);
   when.append(date, time);
   const who = document.createElement('span'); who.className = 'history-who'; who.textContent = check.entered_by;
-  row.append(icon, when, who);
+  row.append(when, who);
   return row;
 }
 
@@ -101,8 +99,7 @@ async function loadHistory(reset = false): Promise<void> {
     if (reset && !result.items.length) {
       const empty = document.createElement('div'); empty.className = 'history-empty';
       const title = document.createElement('strong'); title.textContent = 'No checks yet';
-      const note = document.createElement('p'); note.textContent = 'The first recorded check will appear here.';
-      empty.append(title, note); list.append(empty);
+      empty.append(title); list.append(empty);
     } else result.items.forEach(item => list.append(historyRow(item)));
     nextBefore = result.nextBefore;
     button.hidden = nextBefore === null;
@@ -112,7 +109,7 @@ async function loadHistory(reset = false): Promise<void> {
 }
 
 function closeMenu(): void {
-  mobileMenu.hidden = true;
+  menuPanel.hidden = true;
   menuButton.setAttribute('aria-expanded', 'false');
 }
 
@@ -136,22 +133,17 @@ async function refreshStatus(): Promise<void> {
 loginForm.addEventListener('submit', async event => {
   event.preventDefault(); errorText('login-error', ''); loginButton.disabled = true; loginButton.textContent = 'Checking…';
   try {
+    await sessionReset;
     await api('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ passcode: $<HTMLInputElement>('passcode').value }) });
     await refreshStatus(); showStaff(); setView('dashboard');
-  } catch (error) { errorText('login-error', error instanceof Error ? error.message : 'Could not sign in.'); }
-  finally { loginButton.disabled = false; loginButton.innerHTML = 'Continue <span aria-hidden="true">→</span>'; }
+  } catch (error) { errorText('login-error', error instanceof Error ? error.message : 'Could not enter.'); }
+  finally { loginButton.disabled = false; loginButton.textContent = 'Enter'; }
 });
 
-async function doLogout(): Promise<void> {
-  try { await api('/api/logout', { method: 'POST' }); showLogin(); }
-  catch (error) { $('success-message').hidden = true; setView('history'); errorText('history-error', error instanceof Error ? error.message : 'Could not log out.'); }
-}
-
-['logout-top', 'logout-side', 'logout-mobile'].forEach(id => $(id).addEventListener('click', () => void doLogout()));
 document.querySelectorAll<HTMLButtonElement>('[data-view]').forEach(button => button.addEventListener('click', () => setView(button.dataset.view as 'dashboard' | 'history')));
-$('history-shortcut').addEventListener('click', () => setView('history'));
 $('load-more').addEventListener('click', () => void loadHistory());
-menuButton.addEventListener('click', () => { mobileMenu.hidden = !mobileMenu.hidden; menuButton.setAttribute('aria-expanded', String(!mobileMenu.hidden)); });
+menuButton.addEventListener('click', () => { menuPanel.hidden = !menuPanel.hidden; menuButton.setAttribute('aria-expanded', String(!menuPanel.hidden)); });
+document.addEventListener('click', event => { if (event.target instanceof Element && !event.target.closest('.menu-wrap')) closeMenu(); });
 
 $('open-check').addEventListener('click', () => {
   checkForm.reset(); errorText('check-error', ''); checkRequestId = crypto.randomUUID();
@@ -166,9 +158,4 @@ checkForm.addEventListener('submit', async event => {
     renderLatest(result.item); dialog.close(); $('success-message').hidden = false; setView('dashboard');
   } catch (error) { errorText('check-error', error instanceof Error ? error.message : 'Could not record the check.'); }
   finally { checkButton.disabled = false; checkButton.textContent = 'Confirm check'; }
-});
-
-void refreshStatus().then(() => { showStaff(); setView('dashboard'); }).catch(error => {
-  if (error instanceof Error && error.message.startsWith('Session expired')) showLogin();
-  else { showLogin(); errorText('login-error', error instanceof Error ? error.message : 'Could not open the service.'); }
 });

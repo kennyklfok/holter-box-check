@@ -61,6 +61,7 @@ async function signIn(context: Env): Promise<string> {
   const response = await login(post('/api/login', { passcode: context.PASSCODE }), context);
   expect(response.status).toBe(200);
   expect(response.headers.get('Set-Cookie')).toContain('HttpOnly; Secure; SameSite=Strict');
+  expect(response.headers.get('Set-Cookie')).toContain('Max-Age=1200');
   return response.headers.get('Set-Cookie')!.split(';')[0];
 }
 
