@@ -1,0 +1,13 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "holter-box-check",
+  "compatibility_date": "2026-09-24",
+  "pages_build_output_dir": "./dist",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "holter-box-check",
+      "database_id": "00000000-0000-0000-0000-000000000000"
+    }
+  ]
+}

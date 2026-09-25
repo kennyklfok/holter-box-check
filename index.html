@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f5f7f4" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Holter Box Check</title>
+  </head>
+  <body>
+    <div id="app" class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+          <div><strong>Holter Box Check</strong><small>Main entrance drop-off box</small></div>
+        </div>
+        <div class="top-actions" id="top-actions" hidden>
+          <button id="menu-button" class="menu-button" type="button" aria-expanded="false" aria-controls="mobile-menu">Menu <span aria-hidden="true">☰</span></button>
+          <button id="logout-top" class="text-button desktop-logout" type="button">Log out</button>
+        </div>
+      </header>
+
+      <nav id="mobile-menu" class="mobile-menu" aria-label="Main navigation" hidden>
+        <button class="mobile-nav-button" data-view="dashboard" type="button">Current status</button>
+        <button class="mobile-nav-button" data-view="history" type="button">See history</button>
+        <button id="logout-mobile" class="mobile-nav-button" type="button">Log out</button>
+      </nav>
+
+      <main id="loading-view" class="loading-view"><div class="spinner" aria-hidden="true"></div><p>Opening box check…</p></main>
+
+      <main id="login-view" class="login-layout" hidden>
+        <section class="intro-panel" aria-labelledby="intro-title">
+          <div class="eyebrow"><span class="eyebrow-dot"></span> STAFF CHECK-IN</div>
+          <h1 id="intro-title">A quick check.<br /><em>A clear record.</em></h1>
+          <p>Record when the Holter drop-off box at the main entrance has been checked.</p>
+          <div class="intro-rule"></div>
+          <div class="intro-note"><span class="note-icon" aria-hidden="true">✓</span><span>For staff use only. Never enter patient details.</span></div>
+        </section>
+        <section class="login-card" aria-labelledby="login-title">
+          <div class="card-icon" aria-hidden="true">↗</div>
+          <p class="section-kicker">STAFF ACCESS</p>
+          <h2 id="login-title">Enter the shared passcode</h2>
+          <p class="muted">Use the passcode provided by your team to see the latest check and record a new one.</p>
+          <form id="login-form">
+            <label for="passcode">Staff passcode</label>
+            <input id="passcode" name="passcode" type="password" autocomplete="off" required maxlength="256" placeholder="Enter passcode" />
+            <p id="login-error" class="form-error" role="alert" hidden></p>
+            <button id="login-submit" class="primary-button" type="submit">Continue <span aria-hidden="true">→</span></button>
+          </form>
+          <p class="login-footnote">On a shared device? Log out when you’re finished.</p>
+        </section>
+      </main>
+
+      <main id="staff-view" class="staff-layout" hidden>
+        <aside class="sidebar" aria-label="Main navigation">
+          <p class="side-label">WORKSPACE</p>
+          <button class="side-link active" data-view="dashboard" type="button"><span aria-hidden="true">◫</span> Current status</button>
+          <button class="side-link" data-view="history" type="button"><span aria-hidden="true">◷</span> See history</button>
+          <div class="sidebar-bottom"><div class="side-note"><strong>Main entrance</strong><span>Holter drop-off box</span></div><button id="logout-side" class="side-logout" type="button">↩ <span>Log out</span></button></div>
+        </aside>
+
+        <div class="content-area">
+          <section id="dashboard-view" aria-labelledby="dashboard-title">
+            <div class="page-heading"><div><p class="section-kicker">MAIN ENTRANCE · HOLTER DROP-OFF</p><h1 id="dashboard-title">Box status</h1><p class="page-subtitle">A shared record of the most recent box check.</p></div><span class="timezone-badge">◷ Vancouver time</span></div>
+            <div id="success-message" class="success-banner" role="status" hidden><span class="success-icon" aria-hidden="true">✓</span><span>Check recorded successfully. Thank you.</span></div>
+            <article class="status-card">
+              <div class="status-top"><span class="status-label"><span class="status-dot"></span> LATEST CHECK</span><span class="status-symbol" aria-hidden="true">✓</span></div>
+              <div id="latest-content" class="latest-content"></div>
+              <div class="status-divider"></div>
+              <div class="status-card-footer"><span>Holter drop-off box · Main entrance</span><span>Pacific time</span></div>
+            </article>
+            <div class="action-area"><button id="open-check" class="check-button" type="button"><span class="check-button-icon" aria-hidden="true">✓</span><span>I checked the box</span><span class="button-arrow" aria-hidden="true">→</span></button><p>Only tap after you have checked the box in person.</p></div>
+            <button id="history-shortcut" class="history-shortcut" type="button">See history <span aria-hidden="true">→</span></button>
+          </section>
+
+          <section id="history-view" aria-labelledby="history-title" hidden>
+            <div class="page-heading"><div><p class="section-kicker">MAIN ENTRANCE · HOLTER DROP-OFF</p><h1 id="history-title">Check history</h1><p class="page-subtitle">Every recorded check, newest first.</p></div><span class="timezone-badge">◷ Vancouver time</span></div>
+            <div class="history-card"><div class="history-card-head"><strong>Recorded checks</strong><span>DATE &amp; TIME · STAFF</span></div><div id="history-list" class="history-list"></div><p id="history-error" class="form-error history-error" role="alert" hidden></p><button id="load-more" class="load-more" type="button" hidden>Load more checks</button></div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <dialog id="check-dialog" class="check-dialog" aria-labelledby="dialog-title">
+      <form id="check-form" method="dialog">
+        <button id="dialog-close" class="dialog-close" type="button" aria-label="Close">×</button>
+        <div class="dialog-icon" aria-hidden="true">✓</div>
+        <p class="section-kicker">RECORD A CHECK</p>
+        <h2 id="dialog-title">I checked the box</h2>
+        <p class="muted">Enter your staff initials or name. This will appear in the shared check history.</p>
+        <label for="staff-name">Your initials or name</label>
+        <input id="staff-name" name="staff-name" type="text" maxlength="60" autocomplete="off" required placeholder="e.g. AB or Alex B" />
+        <p class="input-help">Staff name only. Do not enter patient information or device details.</p>
+        <p id="check-error" class="form-error" role="alert" hidden></p>
+        <div class="dialog-actions"><button id="dialog-cancel" class="secondary-button" type="button">Cancel</button><button id="check-submit" class="primary-button" type="submit">Confirm check</button></div>
+      </form>
+    </dialog>
+    <script type="module" src="/src/client/main.ts"></script>
+  </body>
+</html>

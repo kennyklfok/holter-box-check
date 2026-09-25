@@ -1,0 +1,2 @@
+PASSCODE="replace-with-a-long-staff-passcode"
+IP_HASH_SECRET="replace-with-a-random-32-byte-hex-string"
