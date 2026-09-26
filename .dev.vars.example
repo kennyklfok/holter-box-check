@@ -1,2 +1,3 @@
 PASSCODE="replace-with-6-to-12-random-digits"
 IP_HASH_SECRET="replace-with-a-random-32-byte-hex-string"
+LOCK_CODE_KEY="replace-with-a-random-32-byte-hex-string"

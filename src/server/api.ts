@@ -4,9 +4,11 @@ export interface Env {
   DB: D1Database;
   PASSCODE: string;
   IP_HASH_SECRET: string;
+  LOCK_CODE_KEY: string;
 }
 
 type CheckRow = { id: number; entered_by: string; checked_at: string };
+type LockRow = { iv_hex: string; ciphertext_hex: string; updated_at: string };
 const COOKIE = '__Host-holter_session';
 const SESSION_MS = 20 * 60 * 1000;
 const ATTEMPT_WINDOW_MS = 15 * 60 * 1000;
@@ -47,6 +49,18 @@ async function body(request: Request): Promise<Record<string, unknown> | null> {
 
 function hex(bytes: Uint8Array): string {
   return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+function unhex(value: string): Uint8Array<ArrayBuffer> {
+  if (value.length % 2 !== 0 || !/^[0-9a-f]+$/i.test(value)) throw Error('Invalid encrypted data');
+  const bytes = new Uint8Array(new ArrayBuffer(value.length / 2));
+  value.match(/.{2}/g)!.forEach((pair, index) => { bytes[index] = parseInt(pair, 16); });
+  return bytes;
+}
+
+async function lockKey(env: Env): Promise<CryptoKey> {
+  if (!/^[0-9a-f]{64}$/i.test(env.LOCK_CODE_KEY || '')) throw Error('Lock key unavailable');
+  return crypto.subtle.importKey('raw', unhex(env.LOCK_CODE_KEY), 'AES-GCM', false, ['encrypt', 'decrypt']);
 }
 
 async function sha256(value: string): Promise<string> {
@@ -188,6 +202,38 @@ export async function recordCheck(request: Request, env: Env): Promise<Response>
     const item = await env.DB.prepare('SELECT id, entered_by, checked_at FROM checks WHERE request_id = ?').bind(requestId).first<CheckRow>();
     if (!item) return unavailable();
     return json({ item }, 201);
+  } catch (error) {
+    return serverError(error);
+  }
+}
+
+export async function lockCode(request: Request, env: Env): Promise<Response> {
+  if (!configured(env) || !/^[0-9a-f]{64}$/i.test(env.LOCK_CODE_KEY || '')) return unavailable();
+  if (request.method === 'PUT' && !sameOrigin(request)) return json({ error: 'Invalid request origin.' }, 403);
+  try {
+    const denied = await requireAuth(request, env);
+    if (denied) return denied;
+    if (request.method === 'GET') {
+      const row = await env.DB.prepare('SELECT iv_hex, ciphertext_hex, updated_at FROM box_lock_code WHERE id = 1').first<LockRow>();
+      if (new URL(request.url).searchParams.get('reveal') === '1') {
+        if (!row) return json({ code: null, updatedAt: null });
+        const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unhex(row.iv_hex) }, await lockKey(env), unhex(row.ciphertext_hex));
+        return json({ code: new TextDecoder().decode(plaintext), updatedAt: row.updated_at });
+      }
+      return json({ hasCode: Boolean(row), updatedAt: row?.updated_at ?? null });
+    }
+    if (request.method === 'PUT') {
+      const data = await body(request);
+      if (typeof data?.code !== 'string' || !/^[0-9]{3,12}$/.test(data.code)) return json({ error: 'Enter a 3–12 digit box lock code.' }, 400);
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, await lockKey(env), new TextEncoder().encode(data.code));
+      const updatedAt = new Date().toISOString();
+      await env.DB.prepare(`INSERT INTO box_lock_code (id, iv_hex, ciphertext_hex, updated_at) VALUES (1, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET iv_hex = excluded.iv_hex, ciphertext_hex = excluded.ciphertext_hex, updated_at = excluded.updated_at`)
+        .bind(hex(iv), hex(new Uint8Array(encrypted)), updatedAt).run();
+      return json({ ok: true, updatedAt });
+    }
+    return json({ error: 'Method not allowed.' }, 405, { Allow: 'GET, PUT' });
   } catch (error) {
     return serverError(error);
   }

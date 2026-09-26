@@ -11,9 +11,9 @@
     <div id="app">
       <main id="login-view" class="lock-screen">
         <section class="passcode-card" aria-labelledby="login-title">
-          <h1 id="login-title">Holter box</h1>
+          <h1 id="login-title">Holter Box Check Login</h1>
           <form id="login-form">
-            <label for="passcode">Passcode · 6–12 digits</label>
+            <label for="passcode" class="sr-only">Passcode</label>
             <input id="passcode" name="passcode" type="password" inputmode="none" autocomplete="off" pattern="[0-9]{6,12}" minlength="6" maxlength="12" required />
             <div id="keypad" class="keypad" role="group" aria-label="Passcode number pad">
               <button type="button" data-digit="1">1</button>
@@ -37,12 +37,13 @@
 
       <div id="staff-view" hidden>
         <header class="topbar">
-          <strong>Holter box</strong>
+          <strong>Holter Box Check</strong>
           <div class="menu-wrap">
             <button id="menu-button" class="menu-button" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="menu-panel"><span></span><span></span><span></span></button>
             <nav id="menu-panel" class="menu-panel" aria-label="Menu" hidden>
               <button data-view="dashboard" type="button">Box status</button>
               <button data-view="history" type="button">See history</button>
+              <button data-view="lock" type="button">Box lock code</button>
             </nav>
           </div>
         </header>
@@ -51,7 +52,7 @@
           <section id="dashboard-view" class="dashboard-view" aria-labelledby="dashboard-title">
             <div id="success-message" class="success-banner" role="status" hidden>Check recorded.</div>
             <div id="latest-content" class="latest-content" aria-live="polite"></div>
-            <button id="open-check" class="check-button" type="button">I checked the box</button>
+            <button id="open-check" class="check-button" type="button"><span>I checked the box</span><span class="button-arrow" aria-hidden="true">→</span></button>
           </section>
 
           <section id="history-view" class="history-view" aria-labelledby="history-title" hidden>
@@ -59,6 +60,20 @@
             <div id="history-list" class="history-list"></div>
             <p id="history-error" class="form-error" role="alert" hidden></p>
             <button id="load-more" class="load-more" type="button" hidden>Load more</button>
+          </section>
+
+          <section id="lock-view" class="lock-view" aria-labelledby="lock-title" hidden>
+            <h1 id="lock-title">Box lock code</h1>
+            <div class="lock-card">
+              <div id="lock-code-display" class="lock-code-display">Loading…</div>
+              <p id="lock-updated" class="lock-updated" hidden></p>
+              <p id="lock-error" class="form-error" role="alert" hidden></p>
+              <div class="lock-actions">
+                <button id="lock-reveal" class="secondary-button" type="button" hidden>Show code</button>
+                <button id="lock-edit" class="primary-button" type="button">Set code</button>
+              </div>
+            </div>
+            <p class="lock-note">This is the saved code. Change the physical lock separately.</p>
           </section>
         </main>
       </div>
@@ -73,6 +88,18 @@
         <p class="input-help">Do not enter patient information.</p>
         <p id="check-error" class="form-error" role="alert" hidden></p>
         <div class="dialog-actions"><button id="dialog-cancel" class="secondary-button" type="button">Cancel</button><button id="check-submit" class="primary-button" type="submit">Confirm check</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="lock-dialog" class="check-dialog" aria-labelledby="lock-dialog-title">
+      <form id="lock-form" method="dialog">
+        <button id="lock-dialog-close" class="dialog-close" type="button" aria-label="Close">×</button>
+        <h2 id="lock-dialog-title">Set box lock code</h2>
+        <label for="new-lock-code">Box lock code</label>
+        <input id="new-lock-code" name="new-lock-code" type="password" inputmode="numeric" pattern="[0-9]{3,12}" minlength="3" maxlength="12" autocomplete="off" required />
+        <p class="input-help">Save the code currently set on the physical lock.</p>
+        <p id="lock-form-error" class="form-error" role="alert" hidden></p>
+        <div class="dialog-actions"><button id="lock-dialog-cancel" class="secondary-button" type="button">Cancel</button><button id="lock-submit" class="primary-button" type="submit">Save code</button></div>
       </form>
     </dialog>
     <script type="module" src="/src/client/main.ts"></script>

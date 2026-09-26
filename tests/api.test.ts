@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { D1Database } from '@cloudflare/workers-types';
-import { history, login, logout, recordCheck, status, type Env } from '../src/server/api';
+import { history, lockCode, login, logout, recordCheck, status, type Env } from '../src/server/api';
 
 type Check = { id: number; request_id: string; entered_by: string; checked_at: string };
 
@@ -8,6 +8,7 @@ class MemoryDB {
   sessions = new Map<string, { secret_version: string; expires_at: number }>();
   attempts = new Map<string, { window_start: number; attempts: number }>();
   checks: Check[] = [];
+  lockRow: { iv_hex: string; ciphertext_hex: string; updated_at: string } | null = null;
 
   prepare(sql: string) {
     const db = this;
@@ -23,6 +24,7 @@ class MemoryDB {
           return { attempts: next.attempts } as T;
         }
         if (sql.includes('FROM sessions')) return (db.sessions.get(args[0] as string) ?? null) as T | null;
+        if (sql.includes('FROM box_lock_code')) return db.lockRow as T | null;
         if (sql.includes('WHERE request_id = ?')) return (db.checks.find(item => item.request_id === args[0]) ?? null) as T | null;
         if (sql.includes('FROM checks')) return (db.checks.at(-1) ?? null) as T | null;
         throw Error(`Unexpected first query: ${sql}`);
@@ -32,6 +34,10 @@ class MemoryDB {
           const [hash, version, expiry] = args as [string, string, number];
           db.sessions.set(hash, { secret_version: version, expires_at: expiry });
         } else if (sql.startsWith('DELETE FROM sessions')) db.sessions.delete(args[0] as string);
+        else if (sql.startsWith('INSERT INTO box_lock_code')) {
+          const [iv_hex, ciphertext_hex, updated_at] = args as [string, string, string];
+          db.lockRow = { iv_hex, ciphertext_hex, updated_at };
+        }
         else if (sql.startsWith('INSERT INTO checks')) {
           const [requestId, enteredBy, checkedAt] = args as [string, string, string];
           if (!db.checks.some(item => item.request_id === requestId)) db.checks.push({ id: db.checks.length + 1, request_id: requestId, entered_by: enteredBy, checked_at: checkedAt });
@@ -49,13 +55,16 @@ class MemoryDB {
 const ORIGIN = 'https://holter-box-check.pages.dev';
 const ID = 'b84d5159-05e1-4ac5-b074-a57176b8bfad';
 function env(db: MemoryDB): Env {
-  return { DB: db as unknown as D1Database, PASSCODE: '482739', IP_HASH_SECRET: 'test-only-random-secret' };
+  return { DB: db as unknown as D1Database, PASSCODE: '482739', IP_HASH_SECRET: 'test-only-random-secret', LOCK_CODE_KEY: 'a'.repeat(64) };
 }
 function get(path: string, cookie?: string): Request {
   return new Request(`${ORIGIN}${path}`, { headers: cookie ? { Cookie: cookie } : {} });
 }
 function post(path: string, data: unknown, cookie?: string, origin = ORIGIN): Request {
   return new Request(`${ORIGIN}${path}`, { method: 'POST', headers: { Origin: origin, 'Content-Type': 'application/json', ...(cookie ? { Cookie: cookie } : {}) }, body: JSON.stringify(data) });
+}
+function put(path: string, data: unknown, cookie?: string, origin = ORIGIN): Request {
+  return new Request(`${ORIGIN}${path}`, { method: 'PUT', headers: { Origin: origin, 'Content-Type': 'application/json', ...(cookie ? { Cookie: cookie } : {}) }, body: JSON.stringify(data) });
 }
 async function signIn(context: Env): Promise<string> {
   const response = await login(post('/api/login', { passcode: context.PASSCODE }), context);
@@ -71,6 +80,8 @@ describe('passcode protection', () => {
     expect((await status(get('/api/status'), context)).status).toBe(401);
     expect((await history(get('/api/history'), context)).status).toBe(401);
     expect((await recordCheck(post('/api/checks', { enteredBy: 'AB', requestId: ID }), context)).status).toBe(401);
+    expect((await lockCode(get('/api/lock-code?reveal=1'), context)).status).toBe(401);
+    expect((await lockCode(put('/api/lock-code', { code: '0042' }), context)).status).toBe(401);
   });
 
   it('rejects wrong passcodes, rate limits attempts, and blocks cross-origin posts', async () => {
@@ -91,6 +102,26 @@ describe('passcode protection', () => {
     const newCookie = await signIn(context);
     expect((await logout(post('/api/logout', {}, newCookie), context)).status).toBe(200);
     expect((await status(get('/api/status', newCookie), context)).status).toBe(401);
+  });
+});
+
+describe('physical box lock code', () => {
+  it('stores an encrypted code, reveals it only on request, and supports updates', async () => {
+    const db = new MemoryDB();
+    const context = env(db);
+    const cookie = await signIn(context);
+    expect(await (await lockCode(get('/api/lock-code', cookie), context)).json()).toEqual({ hasCode: false, updatedAt: null });
+    const saved = await lockCode(put('/api/lock-code', { code: '0042' }, cookie), context);
+    expect(saved.status).toBe(200);
+    expect(db.lockRow?.ciphertext_hex).not.toContain('0042');
+    expect(JSON.stringify(await (await lockCode(get('/api/lock-code', cookie), context)).json())).not.toContain('0042');
+    expect(await (await lockCode(get('/api/lock-code?reveal=1', cookie), context)).json()).toMatchObject({ code: '0042' });
+    expect((await lockCode(put('/api/lock-code', { code: '1234' }, cookie, 'https://other.example'), context)).status).toBe(403);
+    expect((await lockCode(put('/api/lock-code', { code: 'abc' }, cookie), context)).status).toBe(400);
+    await lockCode(put('/api/lock-code', { code: '9876' }, cookie), context);
+    expect(await (await lockCode(get('/api/lock-code?reveal=1', cookie), context)).json()).toMatchObject({ code: '9876' });
+    context.LOCK_CODE_KEY = '';
+    expect((await lockCode(get('/api/lock-code?reveal=1', cookie), context)).status).toBe(503);
   });
 });
 
