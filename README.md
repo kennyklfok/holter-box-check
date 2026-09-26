@@ -4,7 +4,7 @@ A small staff-only website for logging checks of the Holter drop-off box at the 
 
 ## What it stores
 
-Each check stores only the time and the staff initials or name entered. Do **not** enter patient names, Holter identifiers, or other patient information. The shared passcode does **not** verify that an entered name or initials belong to the person making a check. This version has no individual staff accounts or audit-grade identity verification.
+Each check stores only the time and the staff initials or name entered. Letters and numbers are allowed in that field. Do **not** enter patient names, Holter identifiers, or other patient information. The shared passcode does **not** verify that an entered name or initials belong to the person making a check. This version has no individual staff accounts or audit-grade identity verification.
 
 The **Box lock code** menu item stores the code currently set on the physical box lock. It does not change the lock hardware. Staff who know the shared website passcode can show or replace the saved code. The code is encrypted before storage in D1 using a separate deployment secret; it is revealed only when an authenticated staff member presses **Show code**. Do not put the physical lock code in Git, chat, or documentation.
 

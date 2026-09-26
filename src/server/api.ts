@@ -190,8 +190,8 @@ export async function recordCheck(request: Request, env: Env): Promise<Response>
     const data = await body(request);
     const enteredBy = typeof data?.enteredBy === 'string' ? data.enteredBy.trim().replace(/\s+/g, ' ') : '';
     const requestId = data?.requestId;
-    if (!enteredBy || enteredBy.length > 60 || !/^[\p{L}\p{M} .'-]+$/u.test(enteredBy)) {
-      return json({ error: 'Enter staff initials or a name (letters only, up to 60 characters).' }, 400);
+    if (!enteredBy || enteredBy.length > 60 || !/^[\p{L}\p{M}0-9 .'-]+$/u.test(enteredBy)) {
+      return json({ error: 'Enter staff initials or a name (letters and numbers, up to 60 characters).' }, 400);
     }
     if (typeof requestId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId)) {
       return json({ error: 'Invalid check request. Please reopen the form.' }, 400);

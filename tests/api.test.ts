@@ -132,10 +132,10 @@ describe('check recording', () => {
     const cookie = await signIn(context);
     expect(await (await status(get('/api/status', cookie), context)).json()).toEqual({ latest: null });
     const before = Date.now();
-    const first = await recordCheck(post('/api/checks', { enteredBy: ' AB ', requestId: ID }, cookie), context);
+    const first = await recordCheck(post('/api/checks', { enteredBy: ' AB12 ', requestId: ID }, cookie), context);
     expect(first.status).toBe(201);
     const item = (await first.json() as { item: Check }).item;
-    expect(item.entered_by).toBe('AB');
+    expect(item.entered_by).toBe('AB12');
     expect(Date.parse(item.checked_at)).toBeGreaterThanOrEqual(before);
     expect(Date.parse(item.checked_at)).toBeLessThanOrEqual(Date.now());
     await recordCheck(post('/api/checks', { enteredBy: 'CD', requestId: ID }, cookie), context);
@@ -143,8 +143,9 @@ describe('check recording', () => {
     const secondId = 'a64654bb-7393-4f17-b484-31f734090b19';
     await recordCheck(post('/api/checks', { enteredBy: 'CD', requestId: secondId }, cookie), context);
     const rows = await (await history(get('/api/history', cookie), context)).json() as { items: Check[] };
-    expect(rows.items.map(row => row.entered_by)).toEqual(['CD', 'AB']);
-    expect((await recordCheck(post('/api/checks', { enteredBy: 'Patient 123', requestId: crypto.randomUUID() }, cookie), context)).status).toBe(400);
+    expect(rows.items.map(row => row.entered_by)).toEqual(['CD', 'AB12']);
+    expect((await recordCheck(post('/api/checks', { enteredBy: '7', requestId: crypto.randomUUID() }, cookie), context)).status).toBe(201);
+    expect((await recordCheck(post('/api/checks', { enteredBy: 'AB_12', requestId: crypto.randomUUID() }, cookie), context)).status).toBe(400);
     expect((await recordCheck(post('/api/checks', { enteredBy: 'EF', requestId: crypto.randomUUID() }, cookie, 'https://other.example'), context)).status).toBe(403);
   });
 });
