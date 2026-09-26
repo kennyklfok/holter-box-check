@@ -41,6 +41,7 @@ let lockCodeLength: number | null = null;
 let lockVisible = false;
 let lockRevealTimer: number | null = null;
 let statusRefreshId = 0;
+let successTimer: number | null = null;
 // A fresh QR visit always starts at the passcode, even on a shared device with an old cookie.
 const sessionReset = fetch('/api/logout', { method: 'POST', credentials: 'same-origin', cache: 'no-store' }).catch(() => null);
 
@@ -75,6 +76,18 @@ function errorText(id: string, message: string): void {
   element.hidden = !message;
 }
 
+function hideSuccess(): void {
+  if (successTimer !== null) window.clearTimeout(successTimer);
+  successTimer = null;
+  $('success-message').hidden = true;
+}
+
+function showSuccess(): void {
+  hideSuccess();
+  $('success-message').hidden = false;
+  successTimer = window.setTimeout(hideSuccess, 10_000);
+}
+
 async function api<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(path, { credentials: 'same-origin', cache: 'no-store', ...options });
   let data: Record<string, unknown> = {};
@@ -93,7 +106,7 @@ function showLogin(): void {
   closeMenu();
   if (dialog.open) dialog.close();
   if (lockDialog.open) lockDialog.close();
-  $('success-message').hidden = true;
+  hideSuccess();
   hideLockCode();
   setPasscode('');
 }
@@ -204,7 +217,7 @@ function setView(view: StaffView): void {
   lockView.hidden = view !== 'lock';
   qrView.hidden = view !== 'qr';
   if (view !== 'lock') hideLockCode();
-  if (view !== 'dashboard') $('success-message').hidden = true;
+  if (view !== 'dashboard') hideSuccess();
   document.querySelectorAll<HTMLElement>('[data-view]').forEach(link => {
     link.classList.toggle('active', link.dataset.view === view);
     if (link.dataset.view === view) link.setAttribute('aria-current', 'page');
@@ -332,7 +345,7 @@ checkForm.addEventListener('submit', async event => {
   try {
     const result = await api<{ item: Check }>('/api/checks', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enteredBy: $<HTMLInputElement>('staff-name').value, requestId: checkRequestId }) });
     statusRefreshId++;
-    renderLatest(result.item); errorText('status-error', ''); dialog.close(); $('success-message').hidden = false; setView('dashboard');
+    renderLatest(result.item); errorText('status-error', ''); dialog.close(); setView('dashboard'); showSuccess();
   } catch (error) { errorText('check-error', error instanceof Error ? error.message : 'Could not record the check.'); }
   finally { checkButton.disabled = false; checkButton.textContent = 'Confirm check'; }
 });

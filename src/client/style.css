@@ -10,8 +10,8 @@ button:disabled{cursor:not-allowed;opacity:.6}
 :focus-visible{outline:3px solid #3c9bd6;outline-offset:3px}
 
 .lock-screen{min-height:100dvh;display:grid;place-items:center;padding:24px;background:linear-gradient(160deg,#eaf4fa 0%,#f8fbfd 65%)}
-.passcode-card{width:min(100%,390px);padding:36px;background:#fff;border-top:5px solid #3b9bd6;box-shadow:0 15px 45px #1a4b6817}
-.passcode-card h1{margin:0 0 25px;font-size:30px;line-height:1.2;font-weight:700;letter-spacing:-.035em}
+.passcode-card{width:min(100%,430px);padding:36px;background:#fff;border-top:5px solid #3b9bd6;box-shadow:0 15px 45px #1a4b6817}
+.passcode-card h1{margin:0 0 25px;font-size:30px;line-height:1.2;font-weight:700;letter-spacing:-.035em;text-align:center;text-wrap:balance}
 label{display:block;margin-bottom:9px;font-size:14px;font-weight:700}
 input{display:block;width:100%;min-height:52px;padding:12px 14px;border:1px solid #bfcbd2;border-radius:4px;background:#fff;color:#333;outline:none}
 input:focus{border-color:#3b9bd6;box-shadow:0 0 0 3px #3b9bd629}
@@ -24,6 +24,8 @@ input:focus{border-color:#3b9bd6;box-shadow:0 0 0 3px #3b9bd629}
 .keypad button{width:67px;height:67px;justify-self:center;appearance:none;border:1px solid #d7e4eb;border-radius:50%;background:#f1f7fb;color:#263e4b;font-size:25px;font-weight:600;touch-action:manipulation;user-select:none;-webkit-user-select:none}
 .keypad button:hover{background:#dceef8}
 .keypad button:active{background:#c8e4f3;transform:scale(.96)}
+.passcode-card .keypad{max-width:320px;margin:32px auto 0;gap:20px}
+.passcode-card .keypad button{width:min(76px,100%);height:auto;aspect-ratio:1;font-size:30px;font-weight:400}
 .keypad #passcode-delete{border-color:transparent;background:transparent;font-size:27px}
 .keypad #lock-code-delete{border-color:transparent;background:transparent;font-size:27px}
 .lock-keypad{gap:4px;margin-top:8px}
@@ -100,6 +102,6 @@ input:focus{border-color:#3b9bd6;box-shadow:0 0 0 3px #3b9bd629}
 .secondary-button:hover{background:#f2f6f8}
 
 @media(max-width:600px){.topbar{height:68px;padding:0 18px}.topbar strong{font-size:18px}.content-area{padding:0 22px 56px}.dashboard-view{padding-top:78px}.latest-content{margin-bottom:96px}.latest-content h1{font-size:25px}.latest-time{font-size:32px}.latest-meta{font-size:17px}.check-button{min-height:70px;font-size:18px}.history-view,.lock-view,.qr-view{padding-top:39px}.history-view h1,.lock-view h1,.qr-view h1{font-size:29px}.history-row{padding:17px}.lock-card,.qr-card{padding:20px}.lock-code-display{font-size:28px}.qr-actions{flex-direction:column}.qr-actions a,.qr-actions button{width:100%}.passcode-card{padding:28px}.passcode-card h1{font-size:27px}}
-@media(max-height:700px){.lock-screen{padding:12px}.passcode-card{padding:22px}.passcode-card h1{margin-bottom:15px}.keypad{gap:5px;margin-top:12px}.keypad button{width:56px;height:56px;font-size:22px}}
+@media(max-height:700px){.lock-screen{padding:12px}.passcode-card{padding:22px}.passcode-card h1{margin-bottom:15px}.passcode-card .keypad{margin-top:20px;row-gap:14px}.passcode-card .keypad button{width:min(64px,100%);font-size:27px}}
 @media(prefers-reduced-motion:reduce){.passcode-dots.invalid{animation:none}.check-button,.passcode-dots span{transition:none}}
 @media print{body.qr-print{background:#fff}body.qr-print .topbar,body.qr-print #dashboard-view,body.qr-print #history-view,body.qr-print #lock-view,body.qr-print .qr-actions,body.qr-print .back-button{display:none!important}body.qr-print .content-area{max-width:none;padding:0}body.qr-print .qr-view{padding:0}body.qr-print .qr-view h1{text-align:center}body.qr-print .qr-card{border:0;padding:0}body.qr-print .qr-card img{width:125mm;max-width:100%}body.qr-print .qr-url{font-size:15px}}
