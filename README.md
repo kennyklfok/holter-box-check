@@ -17,6 +17,8 @@ The website login and box lock editor use on-screen PIN pads rather than passwor
 
 The website unlocks automatically after the sixth digit. A wrong PIN clears the dots and briefly disables the pad before allowing another attempt; server rate limiting still applies. Light vibration accompanies PIN taps and check actions when the device supports the Vibration API. iPhone Safari does not currently support that API, so those taps have visual feedback only.
 
+Successful checks show a floating confirmation for 10 seconds without moving the status. History labels recent Vancouver calendar dates as Today or Yesterday, including across daylight-saving changes; older entries show the full date. If a save cannot be confirmed, the dialog offers Retry check with the same request ID to avoid duplicate records. Closing the dialog and starting a new check creates a new request ID.
+
 ## Local setup
 
 Requires Node.js 20.19+ and npm. Use **test-only** passcodes and initials locally.

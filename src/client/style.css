@@ -10,7 +10,7 @@ button:disabled{cursor:not-allowed;opacity:.6}
 :focus-visible{outline:3px solid #3c9bd6;outline-offset:3px}
 
 .lock-screen{min-height:100dvh;display:grid;place-items:center;padding:24px;background:linear-gradient(160deg,#eaf4fa 0%,#f8fbfd 65%)}
-.passcode-card{width:min(100%,430px);padding:36px;background:#fff;border-top:5px solid #3b9bd6;box-shadow:0 15px 45px #1a4b6817}
+.passcode-card{width:min(100%,430px);padding:36px;background:#fff;border-top:5px solid #3b9bd6;border-radius:16px;box-shadow:0 10px 32px #1a4b6812}
 .passcode-card h1{margin:0 0 25px;font-size:30px;line-height:1.2;font-weight:700;letter-spacing:-.035em;text-align:center;text-wrap:balance}
 label{display:block;margin-bottom:9px;font-size:14px;font-weight:700}
 input{display:block;width:100%;min-height:52px;padding:12px 14px;border:1px solid #bfcbd2;border-radius:4px;background:#fff;color:#333;outline:none}
@@ -48,7 +48,8 @@ input:focus{border-color:#3b9bd6;box-shadow:0 0 0 3px #3b9bd629}
 .back-button{display:block;min-height:44px;margin:0 0 12px;padding:8px 0;border:0;background:transparent;color:#245f82;font-size:15px;font-weight:700;text-align:left}
 .back-button:hover{text-decoration:underline}
 .dashboard-view{padding-top:clamp(78px,12vh,140px)}
-.success-banner{margin:0 0 28px;padding:14px 18px;border-left:4px solid #3b9bd6;background:#eaf4fa;color:#214b62;font-size:15px;font-weight:700}
+.success-banner{position:fixed;z-index:6;top:88px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:9px;width:max-content;max-width:calc(100% - 32px);padding:12px 18px;border:1px solid #d2e6df;border-radius:12px;background:#f0faf5;color:#245b45;box-shadow:0 5px 18px #214b6214;font-size:15px;font-weight:700;pointer-events:none}
+.success-banner span{font-size:19px;line-height:1}
 #status-error{margin:0 0 20px}
 .latest-content{margin-bottom:104px}
 .latest-content h1{margin:0 0 19px;color:#333;font-size:clamp(24px,3.1vw,31px);line-height:1.35;font-weight:700;letter-spacing:-.035em}
@@ -90,7 +91,7 @@ input:focus{border-color:#3b9bd6;box-shadow:0 0 0 3px #3b9bd629}
 .qr-actions{display:flex;justify-content:center;gap:12px}
 .qr-actions a,.qr-actions button{display:inline-flex;align-items:center;justify-content:center;min-height:50px;min-width:130px;padding:10px 16px;text-decoration:none}
 
-.check-dialog{width:min(100% - 32px,430px);max-height:calc(100dvh - 32px);overflow:auto;padding:34px;border:0;border-top:5px solid #3b9bd6;box-shadow:0 20px 65px #142f3f4d}
+.check-dialog{width:min(100% - 32px,430px);max-height:calc(100dvh - 32px);overflow:auto;padding:34px;border:0;border-top:5px solid #3b9bd6;border-radius:14px;box-shadow:0 20px 65px #142f3f4d}
 .check-dialog::backdrop{background:#122b3aac}
 .check-dialog form{position:relative}
 .check-dialog h2{margin:0 0 30px;font-size:25px;line-height:1.3;letter-spacing:-.035em}
@@ -98,6 +99,9 @@ input:focus{border-color:#3b9bd6;box-shadow:0 0 0 3px #3b9bd629}
 .input-help{margin:9px 0 0;color:#66737a;font-size:12px}
 .dialog-actions{display:flex;gap:10px;margin-top:29px}
 .dialog-actions button{min-height:49px;flex:1;padding:0 11px;font-size:14px}
+#check-dialog .dialog-actions .primary-button{flex:1.6;border-radius:6px;box-shadow:0 2px 0 #963300,0 3px 8px #8d35031c}
+#check-dialog .dialog-actions .primary-button:active{transform:translateY(1px);box-shadow:0 1px 0 #963300}
+#check-dialog .dialog-actions .secondary-button{border-radius:6px;color:#53616a;font-weight:600}
 .secondary-button{border:1px solid #cbd6dc;border-radius:4px;background:#fff;color:#333;font-weight:700}
 .secondary-button:hover{background:#f2f6f8}
 

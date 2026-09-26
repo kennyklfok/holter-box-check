@@ -2,6 +2,7 @@ import '@fontsource/manrope/latin-400.css';
 import '@fontsource/manrope/latin-600.css';
 import '@fontsource/manrope/latin-700.css';
 import './style.css';
+import { historyDate } from './history-date';
 
 type Check = { id: number; entered_by: string; checked_at: string };
 type History = { items: Check[]; nextBefore: number | null };
@@ -94,9 +95,13 @@ async function api<T>(path: string, options?: RequestInit): Promise<T> {
   try { data = await response.json() as Record<string, unknown>; } catch { /* Service failure has no JSON body. */ }
   if (!response.ok) {
     if (response.status === 401 && path !== '/api/login') showLogin();
-    throw new Error(typeof data.error === 'string' ? data.error : 'Could not reach the service. Please try again.');
+    throw new ApiError(typeof data.error === 'string' ? data.error : 'Could not reach the service. Please try again.', response.status);
   }
   return data as T;
+}
+
+class ApiError extends Error {
+  constructor(message: string, readonly status: number) { super(message); }
 }
 
 function showLogin(): void {
@@ -143,7 +148,7 @@ function renderLatest(check: Check | null): void {
 function historyRow(check: Check): HTMLElement {
   const row = document.createElement('div'); row.className = 'history-row';
   const when = document.createElement('div'); when.className = 'history-when';
-  const date = document.createElement('strong'); date.textContent = localDate(check.checked_at);
+  const date = document.createElement('strong'); date.textContent = historyDate(check.checked_at); date.title = localDate(check.checked_at);
   const time = document.createElement('time'); time.dateTime = check.checked_at; time.textContent = localTime(check.checked_at);
   when.append(date, time);
   const who = document.createElement('span'); who.className = 'history-who'; who.textContent = check.entered_by;
@@ -333,6 +338,7 @@ document.addEventListener('visibilitychange', () => {
 
 $('open-check').addEventListener('click', () => {
   haptic(12);
+  hideSuccess(); checkButton.textContent = 'Confirm check';
   checkForm.reset(); errorText('check-error', ''); checkRequestId = crypto.randomUUID();
   dialog.showModal(); $('staff-name').focus();
 });
@@ -342,13 +348,32 @@ checkForm.addEventListener('submit', async event => {
   event.preventDefault();
   if (checkButton.disabled) return;
   haptic(16); errorText('check-error', ''); checkButton.disabled = true; checkButton.textContent = 'Recording…';
+  const nameInput = $<HTMLInputElement>('staff-name');
+  nameInput.readOnly = true;
+  ['dialog-close', 'dialog-cancel', 'open-check'].forEach(id => { $<HTMLButtonElement>(id).disabled = true; });
+  let retry = false;
   try {
     const result = await api<{ item: Check }>('/api/checks', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enteredBy: $<HTMLInputElement>('staff-name').value, requestId: checkRequestId }) });
     statusRefreshId++;
     renderLatest(result.item); errorText('status-error', ''); dialog.close(); setView('dashboard'); showSuccess();
-  } catch (error) { errorText('check-error', error instanceof Error ? error.message : 'Could not record the check.'); }
-  finally { checkButton.disabled = false; checkButton.textContent = 'Confirm check'; }
+  } catch (error) {
+    retry = true;
+    if (error instanceof ApiError && error.status === 401) {
+      errorText('login-error', 'Session expired. Enter the passcode again.');
+    } else if (error instanceof ApiError && error.status >= 400 && error.status < 500) {
+      errorText('check-error', `Check wasn’t saved. ${error.message}`);
+    } else {
+      // A dropped response can follow a successful write. Reuse the request ID on retry.
+      errorText('check-error', 'Couldn’t confirm the check was saved. Tap Retry check to try again safely.');
+    }
+  }
+  finally {
+    nameInput.readOnly = false;
+    ['dialog-close', 'dialog-cancel', 'open-check'].forEach(id => { $<HTMLButtonElement>(id).disabled = false; });
+    checkButton.disabled = false; checkButton.textContent = retry ? 'Retry check' : 'Confirm check';
+  }
 });
+dialog.addEventListener('cancel', event => { if (checkButton.disabled) event.preventDefault(); });
 
 lockRevealButton.addEventListener('click', async () => {
   if (lockVisible) { hideLockCode(); return; }
