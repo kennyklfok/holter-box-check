@@ -67,6 +67,15 @@ input:focus{border-color:#3b9bd6;box-shadow:0 0 0 3px #3b9bd629}
 .lock-actions button{flex:1;min-height:50px;padding:10px 14px}
 .lock-note{margin:15px 0 0;color:#68747a;font-size:13px;line-height:1.5}
 
+.qr-view{padding-top:65px}
+.qr-view h1{margin:0 0 32px;font-size:32px;line-height:1.2;letter-spacing:-.035em}
+.qr-card{padding:28px;background:#fff;border:1px solid #e0e8ec;text-align:center}
+.qr-card p{margin:0 0 14px;font-size:18px;font-weight:700}
+.qr-card img{display:block;width:min(100%,400px);height:auto;margin:0 auto}
+.qr-url{margin:14px 0 26px;color:#4e5a60;font-size:14px;overflow-wrap:anywhere}
+.qr-actions{display:flex;justify-content:center;gap:12px}
+.qr-actions a,.qr-actions button{display:inline-flex;align-items:center;justify-content:center;min-height:50px;min-width:130px;padding:10px 16px;text-decoration:none}
+
 .check-dialog{width:min(100% - 32px,430px);max-height:calc(100dvh - 32px);overflow:auto;padding:34px;border:0;border-top:5px solid #3b9bd6;box-shadow:0 20px 65px #142f3f4d}
 .check-dialog::backdrop{background:#122b3aac}
 .check-dialog form{position:relative}
@@ -78,5 +87,6 @@ input:focus{border-color:#3b9bd6;box-shadow:0 0 0 3px #3b9bd629}
 .secondary-button{border:1px solid #cbd6dc;border-radius:4px;background:#fff;color:#333;font-weight:700}
 .secondary-button:hover{background:#f2f6f8}
 
-@media(max-width:600px){.topbar{height:68px;padding:0 18px}.topbar strong{font-size:18px}.content-area{padding:0 22px 56px}.dashboard-view{padding-top:78px}.latest-content{margin-bottom:96px}.latest-content h1{font-size:25px}.latest-time{font-size:32px}.latest-meta{font-size:17px}.check-button{min-height:70px;font-size:18px}.history-view,.lock-view{padding-top:39px}.history-view h1,.lock-view h1{font-size:29px}.history-row{padding:17px}.lock-card{padding:20px}.lock-code-display{font-size:28px}.passcode-card{padding:28px}.passcode-card h1{font-size:27px}}
+@media(max-width:600px){.topbar{height:68px;padding:0 18px}.topbar strong{font-size:18px}.content-area{padding:0 22px 56px}.dashboard-view{padding-top:78px}.latest-content{margin-bottom:96px}.latest-content h1{font-size:25px}.latest-time{font-size:32px}.latest-meta{font-size:17px}.check-button{min-height:70px;font-size:18px}.history-view,.lock-view,.qr-view{padding-top:39px}.history-view h1,.lock-view h1,.qr-view h1{font-size:29px}.history-row{padding:17px}.lock-card,.qr-card{padding:20px}.lock-code-display{font-size:28px}.qr-actions{flex-direction:column}.qr-actions a,.qr-actions button{width:100%}.passcode-card{padding:28px}.passcode-card h1{font-size:27px}}
 @media(max-height:700px){.lock-screen{padding:12px}.passcode-card{padding:22px}.passcode-card h1{margin-bottom:15px}.keypad{gap:5px;margin-top:12px}.keypad button{width:56px;height:56px;font-size:22px}}
+@media print{body.qr-print{background:#fff}body.qr-print .topbar,body.qr-print #dashboard-view,body.qr-print #history-view,body.qr-print #lock-view,body.qr-print .qr-actions{display:none!important}body.qr-print .content-area{max-width:none;padding:0}body.qr-print .qr-view{padding:0}body.qr-print .qr-view h1{text-align:center}body.qr-print .qr-card{border:0;padding:0}body.qr-print .qr-card img{width:125mm;max-width:100%}body.qr-print .qr-url{font-size:15px}}

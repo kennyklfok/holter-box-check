@@ -13,6 +13,7 @@ const staffView = $('staff-view');
 const dashboardView = $('dashboard-view');
 const historyView = $('history-view');
 const lockView = $('lock-view');
+const qrView = $('qr-view');
 const dialog = $<HTMLDialogElement>('check-dialog');
 const lockDialog = $<HTMLDialogElement>('lock-dialog');
 const loginForm = $<HTMLFormElement>('login-form');
@@ -169,10 +170,13 @@ async function loadLockStatus(): Promise<void> {
   }
 }
 
-function setView(view: 'dashboard' | 'history' | 'lock'): void {
+type StaffView = 'dashboard' | 'history' | 'lock' | 'qr';
+
+function setView(view: StaffView): void {
   dashboardView.hidden = view !== 'dashboard';
   historyView.hidden = view !== 'history';
   lockView.hidden = view !== 'lock';
+  qrView.hidden = view !== 'qr';
   if (view !== 'lock') hideLockCode();
   document.querySelectorAll<HTMLElement>('[data-view]').forEach(link => {
     link.classList.toggle('active', link.dataset.view === view);
@@ -221,8 +225,10 @@ passcodeInput.addEventListener('input', () => { syncPasscode(); errorText('login
 digitButtons.forEach(button => button.addEventListener('click', () => changePasscode(passcodeInput.value + button.dataset.digit)));
 deleteButton.addEventListener('click', () => changePasscode(passcodeInput.value.slice(0, -1)));
 
-document.querySelectorAll<HTMLButtonElement>('[data-view]').forEach(button => button.addEventListener('click', () => setView(button.dataset.view as 'dashboard' | 'history' | 'lock')));
+document.querySelectorAll<HTMLButtonElement>('[data-view]').forEach(button => button.addEventListener('click', () => setView(button.dataset.view as StaffView)));
 $('load-more').addEventListener('click', () => void loadHistory());
+$('print-qr').addEventListener('click', () => { document.body.classList.add('qr-print'); window.print(); });
+window.addEventListener('afterprint', () => document.body.classList.remove('qr-print'));
 menuButton.addEventListener('click', () => { menuPanel.hidden = !menuPanel.hidden; menuButton.setAttribute('aria-expanded', String(!menuPanel.hidden)); });
 document.addEventListener('click', event => { if (event.target instanceof Element && !event.target.closest('.menu-wrap')) closeMenu(); });
 

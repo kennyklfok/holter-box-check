@@ -57,13 +57,15 @@ A full export also contains the **encrypted** physical lock code. Keep a secure 
 
 ### Print the QR code
 
-After the live URL is known, run:
+After login, open **Website QR code** from the menu. **Zoom in** opens the vector QR code in a new tab, and **Print QR code** opens the browser's print dialog with a clean QR page. No Adobe software is needed.
+
+To regenerate the QR code if the final URL changes, run:
 
 ```sh
 npm run qr -- https://holter-box-check.pages.dev/
 ```
 
-This creates a self-contained `qr-poster.html` with the exact URL encoded in a high-correction QR code. Open it locally and print at 100% scale. `qr-poster.html` is ignored by Git; regenerate it if the URL changes. The poster contains no passcode.
+This updates the bundled `public/website-qr.svg` and creates a self-contained `qr-poster.html` with the exact URL encoded in a high-correction QR code. If the URL changes, also update the displayed URL and image description in `index.html`, then rebuild and deploy. You can open the local poster and print it at 100% scale. `qr-poster.html` is ignored by Git. The QR code contains no passcode.
 
 ## IT approval before staff use
 

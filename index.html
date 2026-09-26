@@ -44,6 +44,7 @@
               <button data-view="dashboard" type="button">Box status</button>
               <button data-view="history" type="button">See history</button>
               <button data-view="lock" type="button">Box lock code</button>
+              <button data-view="qr" type="button">Website QR code</button>
             </nav>
           </div>
         </header>
@@ -74,6 +75,19 @@
               </div>
             </div>
             <p class="lock-note">This is the saved code. Change the physical lock separately.</p>
+          </section>
+
+          <section id="qr-view" class="qr-view" aria-labelledby="qr-title" hidden>
+            <h1 id="qr-title">Website QR code</h1>
+            <div class="qr-card">
+              <p>Scan to open Holter Box Check</p>
+              <img src="/website-qr.svg" alt="QR code for https://holter-box-check.pages.dev/" width="520" height="520" />
+              <div class="qr-url">https://holter-box-check.pages.dev/</div>
+              <div class="qr-actions">
+                <a class="secondary-button" href="/website-qr.svg" target="_blank" rel="noopener">Zoom in</a>
+                <button id="print-qr" class="primary-button" type="button">Print QR code</button>
+              </div>
+            </div>
           </section>
         </main>
       </div>
