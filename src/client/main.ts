@@ -34,6 +34,8 @@ let checkRequestId = '';
 let checkingPasscode = false;
 let lockPresent = false;
 let lockVisible = false;
+let lockRevealTimer: number | null = null;
+let statusRefreshId = 0;
 // A fresh QR visit always starts at the passcode, even on a shared device with an old cookie.
 const sessionReset = fetch('/api/logout', { method: 'POST', credentials: 'same-origin', cache: 'no-store' }).catch(() => null);
 
@@ -66,6 +68,7 @@ async function api<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 function showLogin(): void {
+  statusRefreshId++;
   staffView.hidden = true;
   loginView.hidden = false;
   closeMenu();
@@ -140,9 +143,12 @@ async function loadHistory(reset = false): Promise<void> {
 function closeMenu(): void {
   menuPanel.hidden = true;
   menuButton.setAttribute('aria-expanded', 'false');
+  menuButton.setAttribute('aria-label', 'Open menu');
 }
 
 function hideLockCode(): void {
+  if (lockRevealTimer !== null) window.clearTimeout(lockRevealTimer);
+  lockRevealTimer = null;
   lockVisible = false;
   $('lock-code-display').textContent = lockPresent ? '••••••' : 'No code saved';
   lockRevealButton.textContent = 'Show code';
@@ -178,6 +184,7 @@ function setView(view: StaffView): void {
   lockView.hidden = view !== 'lock';
   qrView.hidden = view !== 'qr';
   if (view !== 'lock') hideLockCode();
+  if (view !== 'dashboard') $('success-message').hidden = true;
   document.querySelectorAll<HTMLElement>('[data-view]').forEach(link => {
     link.classList.toggle('active', link.dataset.view === view);
     if (link.dataset.view === view) link.setAttribute('aria-current', 'page');
@@ -191,6 +198,26 @@ function setView(view: StaffView): void {
 async function refreshStatus(): Promise<void> {
   const data = await api<{ latest: Check | null }>('/api/status');
   renderLatest(data.latest);
+  errorText('status-error', '');
+}
+
+async function refreshStatusSafely(): Promise<void> {
+  const refreshId = ++statusRefreshId;
+  errorText('status-error', '');
+  try {
+    const data = await api<{ latest: Check | null }>('/api/status');
+    if (refreshId === statusRefreshId && !staffView.hidden) renderLatest(data.latest);
+  }
+  catch (error) {
+    if (refreshId === statusRefreshId && !staffView.hidden && !dashboardView.hidden) {
+      errorText('status-error', error instanceof Error ? error.message : 'Could not refresh box status.');
+    }
+  }
+}
+
+function openView(view: StaffView): void {
+  setView(view);
+  if (view === 'dashboard') void refreshStatusSafely();
 }
 
 loginForm.addEventListener('submit', async event => {
@@ -225,12 +252,22 @@ passcodeInput.addEventListener('input', () => { syncPasscode(); errorText('login
 digitButtons.forEach(button => button.addEventListener('click', () => changePasscode(passcodeInput.value + button.dataset.digit)));
 deleteButton.addEventListener('click', () => changePasscode(passcodeInput.value.slice(0, -1)));
 
-document.querySelectorAll<HTMLButtonElement>('[data-view]').forEach(button => button.addEventListener('click', () => setView(button.dataset.view as StaffView)));
+document.querySelectorAll<HTMLButtonElement>('[data-view]').forEach(button => button.addEventListener('click', () => openView(button.dataset.view as StaffView)));
+document.querySelectorAll<HTMLButtonElement>('[data-back]').forEach(button => button.addEventListener('click', () => openView('dashboard')));
 $('load-more').addEventListener('click', () => void loadHistory());
 $('print-qr').addEventListener('click', () => { document.body.classList.add('qr-print'); window.print(); });
 window.addEventListener('afterprint', () => document.body.classList.remove('qr-print'));
-menuButton.addEventListener('click', () => { menuPanel.hidden = !menuPanel.hidden; menuButton.setAttribute('aria-expanded', String(!menuPanel.hidden)); });
+menuButton.addEventListener('click', () => {
+  menuPanel.hidden = !menuPanel.hidden;
+  const expanded = !menuPanel.hidden;
+  menuButton.setAttribute('aria-expanded', String(expanded));
+  menuButton.setAttribute('aria-label', expanded ? 'Close menu' : 'Open menu');
+});
 document.addEventListener('click', event => { if (event.target instanceof Element && !event.target.closest('.menu-wrap')) closeMenu(); });
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') hideLockCode();
+  else if (!staffView.hidden && !dashboardView.hidden) void refreshStatusSafely();
+});
 
 $('open-check').addEventListener('click', () => {
   checkForm.reset(); errorText('check-error', ''); checkRequestId = crypto.randomUUID();
@@ -242,7 +279,8 @@ checkForm.addEventListener('submit', async event => {
   event.preventDefault(); errorText('check-error', ''); checkButton.disabled = true; checkButton.textContent = 'Recording…';
   try {
     const result = await api<{ item: Check }>('/api/checks', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enteredBy: $<HTMLInputElement>('staff-name').value, requestId: checkRequestId }) });
-    renderLatest(result.item); dialog.close(); $('success-message').hidden = false; setView('dashboard');
+    statusRefreshId++;
+    renderLatest(result.item); errorText('status-error', ''); dialog.close(); $('success-message').hidden = false; setView('dashboard');
   } catch (error) { errorText('check-error', error instanceof Error ? error.message : 'Could not record the check.'); }
   finally { checkButton.disabled = false; checkButton.textContent = 'Confirm check'; }
 });
@@ -254,9 +292,11 @@ lockRevealButton.addEventListener('click', async () => {
   try {
     const result = await api<{ code: string | null }>('/api/lock-code?reveal=1');
     if (result.code === null) { lockPresent = false; hideLockCode(); lockRevealButton.hidden = true; return; }
+    if (lockView.hidden || staffView.hidden || document.visibilityState === 'hidden') { hideLockCode(); return; }
     $('lock-code-display').textContent = result.code;
     lockVisible = true;
     lockRevealButton.textContent = 'Hide code';
+    lockRevealTimer = window.setTimeout(hideLockCode, 30_000);
   } catch (error) {
     errorText('lock-error', error instanceof Error ? error.message : 'Could not show box lock code.');
   } finally { lockRevealButton.disabled = false; }

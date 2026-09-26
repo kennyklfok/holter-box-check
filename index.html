@@ -52,11 +52,13 @@
         <main class="content-area">
           <section id="dashboard-view" class="dashboard-view" aria-labelledby="dashboard-title">
             <div id="success-message" class="success-banner" role="status" hidden>Check recorded.</div>
+            <p id="status-error" class="form-error" role="alert" hidden></p>
             <div id="latest-content" class="latest-content" aria-live="polite"></div>
             <button id="open-check" class="check-button" type="button"><span>I checked the box</span><span class="button-arrow" aria-hidden="true">→</span></button>
           </section>
 
           <section id="history-view" class="history-view" aria-labelledby="history-title" hidden>
+            <button class="back-button" data-back type="button">← Box status</button>
             <h1 id="history-title">History</h1>
             <div id="history-list" class="history-list"></div>
             <p id="history-error" class="form-error" role="alert" hidden></p>
@@ -64,6 +66,7 @@
           </section>
 
           <section id="lock-view" class="lock-view" aria-labelledby="lock-title" hidden>
+            <button class="back-button" data-back type="button">← Box status</button>
             <h1 id="lock-title">Box lock code</h1>
             <div class="lock-card">
               <div id="lock-code-display" class="lock-code-display">Loading…</div>
@@ -78,6 +81,7 @@
           </section>
 
           <section id="qr-view" class="qr-view" aria-labelledby="qr-title" hidden>
+            <button class="back-button" data-back type="button">← Box status</button>
             <h1 id="qr-title">Website QR code</h1>
             <div class="qr-card">
               <p>Scan to open Holter Box Check</p>
