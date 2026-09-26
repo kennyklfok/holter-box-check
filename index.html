@@ -12,9 +12,8 @@
       <main id="login-view" class="lock-screen">
         <section class="passcode-card" aria-labelledby="login-title">
           <h1 id="login-title">Holter Box Check Login</h1>
-          <form id="login-form">
-            <label for="passcode" class="sr-only">Passcode</label>
-            <input id="passcode" name="passcode" type="password" inputmode="none" autocomplete="off" pattern="[0-9]{6,12}" minlength="6" maxlength="12" required />
+          <div id="login-pad">
+            <div id="passcode-dots" class="passcode-dots" role="status" aria-live="polite" aria-label="0 of 6 digits entered"><span></span><span></span><span></span><span></span><span></span><span></span></div>
             <div id="keypad" class="keypad" role="group" aria-label="Passcode number pad">
               <button type="button" data-digit="1">1</button>
               <button type="button" data-digit="2">2</button>
@@ -30,8 +29,7 @@
               <button id="passcode-delete" type="button" aria-label="Delete last digit"><svg aria-hidden="true" viewBox="0 0 32 24" width="28" height="24"><path d="M11 2H28a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H11L2 12 11 2Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m16 8 8 8m0-8-8 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
             </div>
             <p id="login-error" class="form-error" role="alert" hidden></p>
-            <button id="login-submit" class="primary-button" type="submit" disabled>Enter</button>
-          </form>
+          </div>
         </section>
       </main>
 
@@ -54,7 +52,7 @@
             <div id="success-message" class="success-banner" role="status" hidden>Check recorded.</div>
             <p id="status-error" class="form-error" role="alert" hidden></p>
             <div id="latest-content" class="latest-content" aria-live="polite"></div>
-            <button id="open-check" class="check-button" type="button"><span>I checked the box</span><span class="button-arrow" aria-hidden="true">→</span></button>
+            <button id="open-check" class="check-button" type="button"><span>I checked the box</span><svg class="button-arrow" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           </section>
 
           <section id="history-view" class="history-view" aria-labelledby="history-title" hidden>
@@ -98,26 +96,39 @@
     </div>
 
     <dialog id="check-dialog" class="check-dialog" aria-labelledby="dialog-title">
-      <form id="check-form" method="dialog">
+      <form id="check-form" method="dialog" autocomplete="off">
         <button id="dialog-close" class="dialog-close" type="button" aria-label="Close">×</button>
         <h2 id="dialog-title">Confirm check</h2>
-        <label for="staff-name">Initials or name</label>
-        <input id="staff-name" name="staff-name" type="text" maxlength="60" autocomplete="off" required />
-        <p class="input-help">Do not enter patient information.</p>
+        <label for="staff-name">Enter your initials or name</label>
+        <input id="staff-name" type="text" maxlength="60" autocomplete="off" autocorrect="off" spellcheck="false" required />
         <p id="check-error" class="form-error" role="alert" hidden></p>
         <div class="dialog-actions"><button id="dialog-cancel" class="secondary-button" type="button">Cancel</button><button id="check-submit" class="primary-button" type="submit">Confirm check</button></div>
       </form>
     </dialog>
 
     <dialog id="lock-dialog" class="check-dialog" aria-labelledby="lock-dialog-title">
-      <form id="lock-form" method="dialog">
+      <form id="lock-form" method="dialog" autocomplete="off">
         <button id="lock-dialog-close" class="dialog-close" type="button" aria-label="Close">×</button>
         <h2 id="lock-dialog-title">Set box lock code</h2>
-        <label for="new-lock-code">Box lock code</label>
-        <input id="new-lock-code" name="new-lock-code" type="password" inputmode="numeric" pattern="[0-9]{3,12}" minlength="3" maxlength="12" autocomplete="off" required />
+        <p class="field-label">Four-digit box lock code</p>
+        <div id="lock-code-dots" class="passcode-dots" role="status" aria-live="polite" aria-label="0 of 4 digits entered"><span></span><span></span><span></span><span></span></div>
+        <div class="keypad lock-keypad" role="group" aria-label="Box lock code number pad">
+          <button type="button" data-lock-digit="1">1</button>
+          <button type="button" data-lock-digit="2">2</button>
+          <button type="button" data-lock-digit="3">3</button>
+          <button type="button" data-lock-digit="4">4</button>
+          <button type="button" data-lock-digit="5">5</button>
+          <button type="button" data-lock-digit="6">6</button>
+          <button type="button" data-lock-digit="7">7</button>
+          <button type="button" data-lock-digit="8">8</button>
+          <button type="button" data-lock-digit="9">9</button>
+          <span aria-hidden="true"></span>
+          <button type="button" data-lock-digit="0">0</button>
+          <button id="lock-code-delete" type="button" aria-label="Delete last digit">⌫</button>
+        </div>
         <p class="input-help">Save the code currently set on the physical lock.</p>
         <p id="lock-form-error" class="form-error" role="alert" hidden></p>
-        <div class="dialog-actions"><button id="lock-dialog-cancel" class="secondary-button" type="button">Cancel</button><button id="lock-submit" class="primary-button" type="submit">Save code</button></div>
+        <div class="dialog-actions"><button id="lock-dialog-cancel" class="secondary-button" type="button">Cancel</button><button id="lock-submit" class="primary-button" type="submit" disabled>Save code</button></div>
       </form>
     </dialog>
     <script type="module" src="/src/client/main.ts"></script>

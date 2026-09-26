@@ -2,6 +2,7 @@
 *{box-sizing:border-box}
 body{margin:0;min-width:320px}
 button,input{font:inherit}
+button,a{-webkit-tap-highlight-color:transparent}
 button{cursor:pointer}
 button:disabled{cursor:not-allowed;opacity:.6}
 [hidden]{display:none!important}
@@ -14,16 +15,22 @@ button:disabled{cursor:not-allowed;opacity:.6}
 label{display:block;margin-bottom:9px;font-size:14px;font-weight:700}
 input{display:block;width:100%;min-height:52px;padding:12px 14px;border:1px solid #bfcbd2;border-radius:4px;background:#fff;color:#333;outline:none}
 input:focus{border-color:#3b9bd6;box-shadow:0 0 0 3px #3b9bd629}
-.passcode-card input{height:58px;padding:0 8px;border:0;border-bottom:2px solid #bfcbd2;border-radius:0;background:transparent;text-align:center;font-size:28px;font-weight:700;letter-spacing:.4em;caret-color:transparent}
-.passcode-card input:focus{border-color:#3b9bd6;box-shadow:none}
+.passcode-dots{display:flex;align-items:center;justify-content:center;gap:15px;min-height:58px}
+.passcode-dots span{display:block;width:17px;height:17px;border:2px solid #8aa6b5;border-radius:50%;background:#fff;transition:background-color .12s,border-color .12s}
+.passcode-dots span.filled{border-color:#263e4b;background:#263e4b}
+.passcode-dots.invalid{animation:pin-shake .28s ease-in-out}
+@keyframes pin-shake{25%{transform:translateX(-8px)}50%{transform:translateX(8px)}75%{transform:translateX(-5px)}}
 .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:20px}
-.keypad button{width:67px;height:67px;justify-self:center;border:1px solid #d7e4eb;border-radius:50%;background:#f1f7fb;color:#263e4b;font-size:25px;font-weight:600;touch-action:manipulation}
+.keypad button{width:67px;height:67px;justify-self:center;appearance:none;border:1px solid #d7e4eb;border-radius:50%;background:#f1f7fb;color:#263e4b;font-size:25px;font-weight:600;touch-action:manipulation;user-select:none;-webkit-user-select:none}
 .keypad button:hover{background:#dceef8}
 .keypad button:active{background:#c8e4f3;transform:scale(.96)}
 .keypad #passcode-delete{border-color:transparent;background:transparent;font-size:27px}
+.keypad #lock-code-delete{border-color:transparent;background:transparent;font-size:27px}
+.lock-keypad{gap:4px;margin-top:8px}
+.lock-keypad button{width:54px;height:54px;font-size:21px}
+.field-label{margin:0 0 5px;font-size:14px;font-weight:700}
 .primary-button,.check-button{border:0;border-radius:4px;background:#c34704;color:#fff;font-weight:700}
 .primary-button:hover,.check-button:hover{background:#a93c03}
-.passcode-card .primary-button{width:100%;min-height:52px;margin-top:17px}
 .form-error{margin:12px 0 0;color:#ad2d21;font-size:13px;line-height:1.5}
 
 .topbar{height:76px;display:flex;align-items:center;justify-content:space-between;padding:0 max(28px,calc((100vw - 1080px)/2));border-top:5px solid #3b9bd6;border-bottom:1px solid #e4e9ec;background:#fff}
@@ -46,8 +53,10 @@ input:focus{border-color:#3b9bd6;box-shadow:0 0 0 3px #3b9bd629}
 .latest-time{display:block;color:#333;font-size:clamp(30px,4.4vw,43px);line-height:1.25;font-weight:700;letter-spacing:-.045em}
 .latest-meta{margin:9px 0 0;color:#4e5a60;font-size:19px;line-height:1.5}
 .latest-meta span:last-child{font-weight:700}
-.check-button{position:relative;display:flex;align-items:center;justify-content:center;width:100%;min-height:74px;padding:15px 58px;font-size:20px;text-align:center;box-shadow:0 8px 20px #a7390820}
-.button-arrow{position:absolute;right:22px;font-size:27px;font-weight:400;line-height:1}
+.check-button{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;min-height:74px;padding:15px 24px;border:1px solid #a93902;border-radius:8px;background:linear-gradient(#d75208,#c34704);font-size:20px;line-height:1.25;text-align:center;box-shadow:0 4px 0 #963300,0 9px 18px #8d35032b,inset 0 1px 0 #ffffff38;transition:transform .1s,box-shadow .1s;touch-action:manipulation}
+.check-button:hover{background:linear-gradient(#cd4a05,#b94003)}
+.check-button:active{transform:translateY(3px);box-shadow:0 1px 0 #963300,0 4px 10px #8d350324,inset 0 1px 0 #ffffff20}
+.button-arrow{display:block;flex:none;width:24px;height:24px}
 
 .history-view{padding-top:65px}
 .history-view h1{margin:0 0 32px;font-size:32px;line-height:1.2;letter-spacing:-.035em}
@@ -92,4 +101,5 @@ input:focus{border-color:#3b9bd6;box-shadow:0 0 0 3px #3b9bd629}
 
 @media(max-width:600px){.topbar{height:68px;padding:0 18px}.topbar strong{font-size:18px}.content-area{padding:0 22px 56px}.dashboard-view{padding-top:78px}.latest-content{margin-bottom:96px}.latest-content h1{font-size:25px}.latest-time{font-size:32px}.latest-meta{font-size:17px}.check-button{min-height:70px;font-size:18px}.history-view,.lock-view,.qr-view{padding-top:39px}.history-view h1,.lock-view h1,.qr-view h1{font-size:29px}.history-row{padding:17px}.lock-card,.qr-card{padding:20px}.lock-code-display{font-size:28px}.qr-actions{flex-direction:column}.qr-actions a,.qr-actions button{width:100%}.passcode-card{padding:28px}.passcode-card h1{font-size:27px}}
 @media(max-height:700px){.lock-screen{padding:12px}.passcode-card{padding:22px}.passcode-card h1{margin-bottom:15px}.keypad{gap:5px;margin-top:12px}.keypad button{width:56px;height:56px;font-size:22px}}
+@media(prefers-reduced-motion:reduce){.passcode-dots.invalid{animation:none}.check-button,.passcode-dots span{transition:none}}
 @media print{body.qr-print{background:#fff}body.qr-print .topbar,body.qr-print #dashboard-view,body.qr-print #history-view,body.qr-print #lock-view,body.qr-print .qr-actions,body.qr-print .back-button{display:none!important}body.qr-print .content-area{max-width:none;padding:0}body.qr-print .qr-view{padding:0}body.qr-print .qr-view h1{text-align:center}body.qr-print .qr-card{border:0;padding:0}body.qr-print .qr-card img{width:125mm;max-width:100%}body.qr-print .qr-url{font-size:15px}}

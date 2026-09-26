@@ -8,17 +8,21 @@ Each check stores only the time and the staff initials or name entered. Letters 
 
 D1 keeps only the **20 most recent checks**. Recording a new check automatically deletes the oldest one once the limit is reached. Applying migration `0003` also deletes any existing checks beyond the newest 20. Separately exported backups do not expire automatically.
 
-The **Box lock code** menu item stores the code currently set on the physical box lock. It does not change the lock hardware. Staff who know the shared website passcode can show or replace the saved code. The code is encrypted before storage in D1 using a separate deployment secret; it is revealed only when an authenticated staff member presses **Show code**. Do not put the physical lock code in Git, chat, or documentation.
+The **Box lock code** menu item stores the four-digit code currently set on the physical box lock. It does not change the lock hardware. Staff who know the shared six-digit website passcode can show or replace the saved code. The code is encrypted before storage in D1 using a separate deployment secret; it is revealed only when an authenticated staff member presses **Show code**. The hidden dots match the length of the saved code, including any older code saved before the four-digit rule. Do not put the physical lock code in Git, chat, or documentation.
 The revealed code hides again after 30 seconds or when the page leaves the foreground. Returning to Box status or bringing its tab back into view refreshes the latest check without adding background polling.
 
 Sessions last 20 minutes, are kept in D1, and use an opaque `HttpOnly; Secure; SameSite=Strict` cookie. Each fresh page load clears the previous session before accepting the passcode, so scanning the QR code opens directly to the passcode screen. There is no visible logout control; staff should close the tab after use. Changing either deployment secret invalidates existing sessions. Passcode attempts are limited to 10 per IP address per 15-minute window using an HMAC-hashed IP key in D1. Staff behind one hospital network address share that limit. A repeated check request ID creates only one record. Server and database failures return an error rather than exposing data.
+
+The website login and box lock editor use on-screen PIN pads rather than password inputs, and the initials/name field requests no autocomplete. This reduces password-save and autofill prompts. Browsers and installed password managers may still show their own prompts; hospital IT should disable password saving and form autofill on shared devices if those prompts must be suppressed completely. The session cookie is not a saved password.
+
+The website unlocks automatically after the sixth digit. A wrong PIN clears the dots and briefly disables the pad before allowing another attempt; server rate limiting still applies. Light vibration accompanies PIN taps and check actions when the device supports the Vibration API. iPhone Safari does not currently support that API, so those taps have visual feedback only.
 
 ## Local setup
 
 Requires Node.js 20.19+ and npm. Use **test-only** passcodes and initials locally.
 
 1. Run `npm install`.
-2. Copy `.dev.vars.example` to `.dev.vars`. Replace `PASSCODE` with a test-only 6–12 digit number. Set `IP_HASH_SECRET` to a long random value. Set `LOCK_CODE_KEY` to a separate 32-byte hex value. Generate each with `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`. Do not commit `.dev.vars`.
+2. Copy `.dev.vars.example` to `.dev.vars`. Replace `PASSCODE` with a test-only six-digit number. Set `IP_HASH_SECRET` to a long random value. Set `LOCK_CODE_KEY` to a separate 32-byte hex value. Generate each with `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`. Do not commit `.dev.vars`.
 3. Run `npx wrangler d1 migrations apply holter-box-check --local`. Wrangler uses an isolated local D1 database even though `wrangler.jsonc` contains the remote database ID.
 4. Run `npm run build`, then `npm run dev`. Open `http://localhost:8788`.
 5. Run `npm test` for focused API tests. Run `npm run build` again after edits.
@@ -34,7 +38,7 @@ To deploy a reviewed update:
 1. Check out the desired commit from the GitHub repository. Run `npm ci`, `npm test`, and `npm run build`.
 2. Authenticate to the intended Cloudflare account with `npx wrangler login` if needed. Confirm it with `npx wrangler whoami`.
 3. If there are new migrations, run `npx wrangler d1 migrations apply holter-box-check --remote`. The `DB` binding and remote database ID are already in `wrangler.jsonc`.
-4. In **Workers & Pages → holter-box-check → Settings → Variables and Secrets**, ensure `PASSCODE`, `IP_HASH_SECRET`, and `LOCK_CODE_KEY` are encrypted **Secret** values for Production. `PASSCODE` must be 6–12 digits; use a random sequence rather than a common PIN. `LOCK_CODE_KEY` must be a random 32-byte value encoded as 64 hex characters. Set or change secrets in the dashboard or with Wrangler; never put them in source, GitHub, a QR code, or a client build.
+4. In **Workers & Pages → holter-box-check → Settings → Variables and Secrets**, ensure `PASSCODE`, `IP_HASH_SECRET`, and `LOCK_CODE_KEY` are encrypted **Secret** values for Production. `PASSCODE` must be exactly six digits; use a random sequence rather than a common PIN. `LOCK_CODE_KEY` must be a random 32-byte value encoded as 64 hex characters. Set or change secrets in the dashboard or with Wrangler; never put them in source, GitHub, a QR code, or a client build.
 5. In **Settings → Runtime → Fail open / closed**, ensure **Fail closed** is selected. This is essential because Functions protect the API when the free Functions quota is exhausted.
 6. Run `npx wrangler pages deploy dist --project-name holter-box-check --branch main`. The `functions/` directory supplies Pages Functions, and the Wrangler configuration binds D1.
 7. Verify the production URL: a private browser session should see the passcode form; `/api/status`, `/api/history`, and `/api/lock-code` should return `401` without a session; an authorized test check should appear once in latest and history. Use test initials and a test-only lock code during verification and arrange any test-record cleanup through the approved retention process before staff use.
@@ -46,7 +50,7 @@ Do not enable public caching for `/api/*`; the API sends `Cache-Control: no-stor
 
 ### Change the passcode
 
-Change the encrypted `PASSCODE` secret in the Pages project to 6–12 random digits and redeploy. Existing sessions automatically stop working because their stored secret version no longer matches. Distribute the new passcode through an approved channel. If `IP_HASH_SECRET` is also rotated, sessions are likewise invalidated and login-attempt keys change.
+Change the encrypted `PASSCODE` secret in the Pages project to exactly six random digits and redeploy. Existing sessions automatically stop working because their stored secret version no longer matches. Distribute the new passcode through an approved channel. If `IP_HASH_SECRET` is also rotated, sessions are likewise invalidated and login-attempt keys change.
 
 The physical **box lock code** is separate from the website passcode. Change it on the physical lock, then use **Box lock code → Edit code** to update the saved copy. If `LOCK_CODE_KEY` is lost or rotated, the saved code cannot be decrypted; have an authorized staff member confirm the physical lock code and save it again under the new key.
 

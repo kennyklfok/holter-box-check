@@ -89,6 +89,7 @@ describe('passcode protection', () => {
     expect((await login(post('/api/login', { passcode: '111111' }, undefined, 'https://other.example'), context)).status).toBe(403);
     expect((await login(post('/api/login', { passcode: 'letters' }), context)).status).toBe(400);
     expect((await login(post('/api/login', { passcode: '12345' }), context)).status).toBe(400);
+    expect((await login(post('/api/login', { passcode: '12345678' }), context)).status).toBe(400);
     for (let i = 0; i < 10; i++) expect((await login(post('/api/login', { passcode: '111111' }), context)).status).toBe(401);
     expect((await login(post('/api/login', { passcode: context.PASSCODE }), context)).status).toBe(429);
   });
@@ -97,7 +98,7 @@ describe('passcode protection', () => {
     const context = env(new MemoryDB());
     const cookie = await signIn(context);
     expect((await status(get('/api/status', cookie), context)).status).toBe(200);
-    context.PASSCODE = '92746183';
+    context.PASSCODE = '927461';
     expect((await status(get('/api/status', cookie), context)).status).toBe(401);
     const newCookie = await signIn(context);
     expect((await logout(post('/api/logout', {}, newCookie), context)).status).toBe(200);
@@ -110,14 +111,17 @@ describe('physical box lock code', () => {
     const db = new MemoryDB();
     const context = env(db);
     const cookie = await signIn(context);
-    expect(await (await lockCode(get('/api/lock-code', cookie), context)).json()).toEqual({ hasCode: false, updatedAt: null });
+    expect(await (await lockCode(get('/api/lock-code', cookie), context)).json()).toEqual({ hasCode: false, codeLength: null, updatedAt: null });
     const saved = await lockCode(put('/api/lock-code', { code: '0042' }, cookie), context);
     expect(saved.status).toBe(200);
     expect(db.lockRow?.ciphertext_hex).not.toContain('0042');
+    expect(await (await lockCode(get('/api/lock-code', cookie), context)).json()).toMatchObject({ hasCode: true, codeLength: 4 });
     expect(JSON.stringify(await (await lockCode(get('/api/lock-code', cookie), context)).json())).not.toContain('0042');
     expect(await (await lockCode(get('/api/lock-code?reveal=1', cookie), context)).json()).toMatchObject({ code: '0042' });
     expect((await lockCode(put('/api/lock-code', { code: '1234' }, cookie, 'https://other.example'), context)).status).toBe(403);
     expect((await lockCode(put('/api/lock-code', { code: 'abc' }, cookie), context)).status).toBe(400);
+    expect((await lockCode(put('/api/lock-code', { code: '123' }, cookie), context)).status).toBe(400);
+    expect((await lockCode(put('/api/lock-code', { code: '12345' }, cookie), context)).status).toBe(400);
     await lockCode(put('/api/lock-code', { code: '9876' }, cookie), context);
     expect(await (await lockCode(get('/api/lock-code?reveal=1', cookie), context)).json()).toMatchObject({ code: '9876' });
     context.LOCK_CODE_KEY = '';

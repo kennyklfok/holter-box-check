@@ -24,7 +24,7 @@ function unavailable(): Response {
 }
 
 function configured(env: Env): boolean {
-  return Boolean(env.DB && /^[0-9]{6,12}$/.test(env.PASSCODE) && env.IP_HASH_SECRET);
+  return Boolean(env.DB && /^[0-9]{6}$/.test(env.PASSCODE) && env.IP_HASH_SECRET);
 }
 
 function sameOrigin(request: Request): boolean {
@@ -108,7 +108,7 @@ export async function login(request: Request, env: Env): Promise<Response> {
   if (!configured(env)) return unavailable();
   if (!sameOrigin(request)) return json({ error: 'Invalid request origin.' }, 403);
   const data = await body(request);
-  if (typeof data?.passcode !== 'string' || !/^[0-9]{6,12}$/.test(data.passcode)) return json({ error: 'Enter a 6–12 digit passcode.' }, 400);
+  if (typeof data?.passcode !== 'string' || !/^[0-9]{6}$/.test(data.passcode)) return json({ error: 'Enter a six-digit passcode.' }, 400);
   try {
     const ip = request.headers.get('CF-Connecting-IP') || 'local';
     const key = await hmac(env.IP_HASH_SECRET, ip);
@@ -215,16 +215,15 @@ export async function lockCode(request: Request, env: Env): Promise<Response> {
     if (denied) return denied;
     if (request.method === 'GET') {
       const row = await env.DB.prepare('SELECT iv_hex, ciphertext_hex, updated_at FROM box_lock_code WHERE id = 1').first<LockRow>();
-      if (new URL(request.url).searchParams.get('reveal') === '1') {
-        if (!row) return json({ code: null, updatedAt: null });
-        const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unhex(row.iv_hex) }, await lockKey(env), unhex(row.ciphertext_hex));
-        return json({ code: new TextDecoder().decode(plaintext), updatedAt: row.updated_at });
-      }
-      return json({ hasCode: Boolean(row), updatedAt: row?.updated_at ?? null });
+      const reveal = new URL(request.url).searchParams.get('reveal') === '1';
+      if (!row) return reveal ? json({ code: null, updatedAt: null }) : json({ hasCode: false, codeLength: null, updatedAt: null });
+      const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unhex(row.iv_hex) }, await lockKey(env), unhex(row.ciphertext_hex));
+      const code = new TextDecoder().decode(plaintext);
+      return reveal ? json({ code, updatedAt: row.updated_at }) : json({ hasCode: true, codeLength: code.length, updatedAt: row.updated_at });
     }
     if (request.method === 'PUT') {
       const data = await body(request);
-      if (typeof data?.code !== 'string' || !/^[0-9]{3,12}$/.test(data.code)) return json({ error: 'Enter a 3–12 digit box lock code.' }, 400);
+      if (typeof data?.code !== 'string' || !/^[0-9]{4}$/.test(data.code)) return json({ error: 'Enter a four-digit box lock code.' }, 400);
       const iv = crypto.getRandomValues(new Uint8Array(12));
       const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, await lockKey(env), new TextEncoder().encode(data.code));
       const updatedAt = new Date().toISOString();
