@@ -38,7 +38,7 @@ input:focus{border-color:#3b9bd6;box-shadow:0 0 0 3px #3b9bd629}
 .content-area{max-width:760px;margin:0 auto;padding:0 28px 80px}
 .dashboard-view{padding-top:clamp(78px,12vh,140px)}
 .success-banner{margin:0 0 28px;padding:14px 18px;border-left:4px solid #3b9bd6;background:#eaf4fa;color:#214b62;font-size:15px;font-weight:700}
-.latest-content{margin-bottom:42px}
+.latest-content{margin-bottom:104px}
 .latest-content h1{margin:0 0 19px;color:#333;font-size:clamp(24px,3.1vw,31px);line-height:1.35;font-weight:700;letter-spacing:-.035em}
 .latest-time{display:block;color:#333;font-size:clamp(30px,4.4vw,43px);line-height:1.25;font-weight:700;letter-spacing:-.045em}
 .latest-meta{margin:9px 0 0;color:#4e5a60;font-size:19px;line-height:1.5}
@@ -78,5 +78,5 @@ input:focus{border-color:#3b9bd6;box-shadow:0 0 0 3px #3b9bd629}
 .secondary-button{border:1px solid #cbd6dc;border-radius:4px;background:#fff;color:#333;font-weight:700}
 .secondary-button:hover{background:#f2f6f8}
 
-@media(max-width:600px){.topbar{height:68px;padding:0 18px}.topbar strong{font-size:18px}.content-area{padding:0 22px 56px}.dashboard-view{padding-top:78px}.latest-content{margin-bottom:35px}.latest-content h1{font-size:25px}.latest-time{font-size:32px}.latest-meta{font-size:17px}.check-button{min-height:70px;font-size:18px}.history-view,.lock-view{padding-top:39px}.history-view h1,.lock-view h1{font-size:29px}.history-row{padding:17px}.lock-card{padding:20px}.lock-code-display{font-size:28px}.passcode-card{padding:28px}.passcode-card h1{font-size:27px}}
+@media(max-width:600px){.topbar{height:68px;padding:0 18px}.topbar strong{font-size:18px}.content-area{padding:0 22px 56px}.dashboard-view{padding-top:78px}.latest-content{margin-bottom:96px}.latest-content h1{font-size:25px}.latest-time{font-size:32px}.latest-meta{font-size:17px}.check-button{min-height:70px;font-size:18px}.history-view,.lock-view{padding-top:39px}.history-view h1,.lock-view h1{font-size:29px}.history-row{padding:17px}.lock-card{padding:20px}.lock-code-display{font-size:28px}.passcode-card{padding:28px}.passcode-card h1{font-size:27px}}
 @media(max-height:700px){.lock-screen{padding:12px}.passcode-card{padding:22px}.passcode-card h1{margin-bottom:15px}.keypad{gap:5px;margin-top:12px}.keypad button{width:56px;height:56px;font-size:22px}}

@@ -6,6 +6,8 @@ A small staff-only website for logging checks of the Holter drop-off box at the 
 
 Each check stores only the time and the staff initials or name entered. Letters and numbers are allowed in that field. Do **not** enter patient names, Holter identifiers, or other patient information. The shared passcode does **not** verify that an entered name or initials belong to the person making a check. This version has no individual staff accounts or audit-grade identity verification.
 
+D1 keeps only the **20 most recent checks**. Recording a new check automatically deletes the oldest one once the limit is reached. Applying migration `0003` also deletes any existing checks beyond the newest 20. Separately exported backups do not expire automatically.
+
 The **Box lock code** menu item stores the code currently set on the physical box lock. It does not change the lock hardware. Staff who know the shared website passcode can show or replace the saved code. The code is encrypted before storage in D1 using a separate deployment secret; it is revealed only when an authenticated staff member presses **Show code**. Do not put the physical lock code in Git, chat, or documentation.
 
 Sessions last 20 minutes, are kept in D1, and use an opaque `HttpOnly; Secure; SameSite=Strict` cookie. Each fresh page load clears the previous session before accepting the passcode, so scanning the QR code opens directly to the passcode screen. There is no visible logout control; staff should close the tab after use. Changing either deployment secret invalidates existing sessions. Passcode attempts are limited to 10 per IP address per 15-minute window using an HMAC-hashed IP key in D1. Staff behind one hospital network address share that limit. A repeated check request ID creates only one record. Server and database failures return an error rather than exposing data.
@@ -66,7 +68,7 @@ This creates a self-contained `qr-poster.html` with the exact URL encoded in a h
 ## IT approval before staff use
 
 - Approve use of Cloudflare Pages and D1 for this staff activity, including organizational security review, data location, privacy requirements, and the fact that staff names or initials are retained in D1.
-- Set an appropriate retention and deletion policy for history, backup storage, and access to the Cloudflare account. Assign an owner for the passcode, secret rotation, account recovery, and incident response.
+- Approve the 20-check D1 retention limit and set a retention and deletion policy for any exported backups. Assign an owner for the passcode, secret rotation, account recovery, and incident response.
 - Approve storing the physical lock code in this app. Anyone with the shared website passcode can reveal or replace the saved code, and the app cannot verify whether it matches the physical lock. Decide who may edit the physical lock and its saved code.
 - Decide how the shared passcode is distributed and how staff close the page on shared devices. A session remains usable in an open tab for up to 20 minutes; a fresh load clears it. Confirm that a shared passcode and self-entered name are acceptable for this operational record; they do not establish individual identity.
 - Confirm network access and mobile scanning at the entrance. Approve placement and maintenance of the printed QR code so it continues to point to the intended pages.dev URL.
