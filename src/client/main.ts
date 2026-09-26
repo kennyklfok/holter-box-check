@@ -86,7 +86,7 @@ function hideSuccess(): void {
 function showSuccess(): void {
   hideSuccess();
   $('success-message').hidden = false;
-  successTimer = window.setTimeout(hideSuccess, 10_000);
+  successTimer = window.setTimeout(hideSuccess, 5_000);
 }
 
 async function api<T>(path: string, options?: RequestInit): Promise<T> {
